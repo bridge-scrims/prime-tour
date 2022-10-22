@@ -49,6 +49,9 @@ class PrimeTourSignups extends ExchangeHandler {
     async verifyCreation(interaction) {
         const signup = await interaction.client.database.signups.sqlFind({ user_id: interaction.user.id })
         if (signup) throw new UserError(await signup.asMessage())
+
+        const count = await interaction.client.database.signups.count()
+        if (count >= 208) throw new UserError('Sign-ups Closed!', 'The 208 slots have been filed.')
         return true;
     }
 
@@ -77,8 +80,9 @@ class PrimeTourSignups extends ExchangeHandler {
                 );
             
             const registration = { mc_uuid: minecraft.id, country: country['alpha3'], timezone: timezone.name }
-            const updated = await interaction.database.users.update(interaction.user.id, registration)
-            if (updated.length === 0) console.warn(`User Profile Missing for '${interaction.user.id}'!`, registration)
+            interaction.database.users.update(interaction.user.id, registration).then(v => {
+                if (v.length === 0) console.warn(`User Profile Missing for '${interaction.user.id}'!`, registration)
+            })
     
             const signup = await interaction.client.database.signups.create({ user_id: interaction.user.id, mc_uuid: minecraft.id, timezone: timezone.name, joined })
             await Promise.all(
@@ -87,6 +91,7 @@ class PrimeTourSignups extends ExchangeHandler {
                     ?.map(r => interaction.member.roles.add(r)) 
                 ?? []
             ).catch(err => console.warn(`Could not add participant roles to '${interaction.user.id}'!`))
+            
             return signup.asMessage()
         }finally {
             delete this.locks[interaction.user.id]

@@ -1,9 +1,10 @@
 {
     
     "discord_token": "",
+    "challonge_token": "",
     "hypixel_token": "",
 
-    "host_guild_id": "759894401957888031",
+    "host_guild_id": "872250320946884648",
 
     "database": {
         "hostname": "",
@@ -12,7 +13,7 @@
         "username": "bot",
         "password": "",
 
-        "database": "support_bot"
+        "database": "scrims"
     }
 
 }
