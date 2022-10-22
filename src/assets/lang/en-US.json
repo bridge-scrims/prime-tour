@@ -49,7 +49,11 @@
     "commands": {
         "kill": {
             "name": "kill",
-            "description": "Used to kill the bot cleanly."
+            "description": "Used to kill the bot cleanly.",
+            "exit_option": {
+                "name": "exit_code",
+                "description": "The exit code to exit the process with."
+            }
         },
         "send": {
             "name": "send",

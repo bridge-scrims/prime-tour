@@ -65,15 +65,6 @@ class CommandHandler {
         if (interaction.commandName === "CANCEL" && interaction.type === InteractionType.MessageComponent) 
             throw new LocalizedError('operation_cancelled')
 
-        if (
-            this.bot.blocked && (interaction?.commandConfig?.denyWhenBlocked)
-            && (this.bot.handles.indexOf(interaction.id) === -1) && (this.bot.handles.indexOf(interaction.commandName) === -1)
-            && !(interaction.commandName === "killAction")
-        ) {
-            this.bot.emit('blocked', interaction.constructor.name)
-            throw new LocalizedError('blocked_cancel');
-        }
-
         await this.bot.profileUpdater?.verifyProfile(interaction.user)
         interaction.userProfile = this.database.users.cache.find({ user_id: interaction.user.id }) || UserProfile.resolve(interaction.user)
         interaction.userPermissions = await this.bot.permissions.fetchUserPermissions(interaction.user.id)
