@@ -13,7 +13,7 @@ async function onKillCommand(interaction) {
     process.exit(interaction.options.get(Options.ExitCode)?.value ?? 1)
 }
 
-/** @type {import('../types').BotCommand} */
+/** @type {import('../../types').BotCommand} */
 module.exports = {
     command: new LocalizedSlashCommandBuilder()
         .setNameAndDescription('commands.kill')

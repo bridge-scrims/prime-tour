@@ -20,10 +20,7 @@ class PrimeTourBot extends ScrimsBot {
     /** @param {import('./config.example.json')} config */
     constructor(config) {
 
-        const intents = [ 
-            GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildVoiceStates, 
-            GatewayIntentBits.GuildPresences
-        ]
+        const intents = []
         const presence = { status: "online", activities: [{ name: 'Season 2', type: ActivityType.Playing }]}
 
         super({ intents, presence, config, Database: PrimeTourBotDatabase });

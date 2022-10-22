@@ -4,3 +4,5 @@ logs
 .vscode
 package-lock.json
 src/config.json
+*.heapsnapshot
+y.ts
