@@ -16,13 +16,14 @@ const DBAttachment = require('../scrims/attachment');
 const UserProfile = require('../scrims/user_profile');
 const Position = require('../scrims/position');
 const DBSession = require('../scrims/session');
+const ScrimsVouch = require('../scrims/vouch');
 const Ticket = require("../scrims/ticket");
 const DBGuild = require('../scrims/guild');
-const ScrimsVouch = require('../scrims/vouch');
 const DBGame = require('../scrims/game');
 const DBType = require('../scrims/type');
 
 const SQLStatementCreator = require('./statements');
+const { SQLQueryBuilder } = require('./query');
 const DBTable = require('./table');
 
 const EventEmitter = require('events');
@@ -67,6 +68,8 @@ class DBClient extends EventEmitter {
 
         /** @type {Object.<string, string[]>} */
         this.columns = {}
+
+        this.queryBuilder = new SQLQueryBuilder()
 
         /** 
          * @protected
@@ -266,11 +269,23 @@ class DBClient extends EventEmitter {
     }
  
     /**
-     * @param {string} queryText 
-     * @param {any[]} values
+     * @param {string} functionName 
+     * @param {Object.<string, any>|Array.<string>} [parameters] 
      */
-    async query(queryText, values) {
-        const result = await this.client.query(queryText, values)
+    async call(functionName, parameters) {
+        const query = this.queryBuilder.buildFunctionCall(functionName, parameters)
+        const result = await this.query(...query)
+        return result.rows?.[0]?.[functionName] ?? null;
+    }
+
+    /**
+     * @param {(any[] | string)[]} query 
+     */
+    async query(...query) {
+        const result = await this.client.query(
+            query.filter(v => (typeof v === "string")).join(" "), 
+            query.filter(v => v instanceof Array).flat()
+        )
         if (result.fields && result.rows) {
             const bigintColumns = result.fields.filter(f => f.dataTypeID === 20).map(v => v.name)
             for (const row of result.rows) {

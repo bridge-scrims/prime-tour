@@ -189,6 +189,30 @@
                 "name": "client",
                 "description": "Who should this configuration effect?"
             }
+        },
+        "tourney": {
+            "name": "tourney",
+            "description": "Commands related to the tournament.",
+            "start": {
+                "name": "start",
+                "description": "Used to start a round."
+            },
+            "score": {
+                "name": "score",
+                "description": "Used to score a match."
+            },
+            "round_option": {
+                "name": "round",
+                "description": "The round number you would like to start."
+            },
+            "length_option": {
+                "name": "length",
+                "description": "The amount of days this round should last."
+            },
+            "game_score_option": {
+                "name": "game§{0}",
+                "description": "The score of game §{0} written as {winner's points}-{losser's points} (e.g. 5-0)"
+            }
         }
     },
     "party": {
@@ -269,7 +293,7 @@
         "permissions_already_correct": "The permissions for %s are already set like you requested.",
         "creator_only": "This decision is reserved for the ticket creator %s!",
         "permissions_updated": "%s updated the permissions of %s.",
-        "existing": "You already have a ticket of this type open (%s)!",
+        "existing": "You have already created one of these (%s)!",
         "none": "This command can only be used in ticket channels!"
     },
     "suggestions": {
@@ -288,7 +312,7 @@
         "description_2": "Decided by the §{0}?( for *§{1}*).",
         "expired": {
             "name": "+ %s  :stopwatch:  Expired Vouch(es)",
-            "value": "*(Vouches expire after 3 months)*"
+            "value": "*(Vouches expire after 4 months)*"
         },
         "to_field": {
             "neagtive": {
@@ -325,7 +349,7 @@
     "app_not_enough_vouches": { 
         "title": "You need at least %s vouches to apply for %s!",
         "description": "To learn how to obtain vouches see <#%s>. If you require further assistance, feel free to create a support ticket in <#%s>.", 
-        "footer": { "text": "Please also note that vouches expire after 3 months." } 
+        "footer": { "text": "Please also note that vouches expire after 4 months." } 
     },
     "app_received": "***Your application was received by the council!***",
     "vs": "V/S",
@@ -335,5 +359,8 @@
             "title": "%s Game History"
         }
     },
-    "no_image_dump": "This image could not be locked, due to this feature not being configured yet."
+    "no_image_dump": "This image could not be locked, due to this feature not being configured yet.",
+    "prime_tour": {
+        "match_intro": "**Welcome to round %s of Prime Tour!** This round will end %s. Please remember to visit %s and %s for more info, and let us know if you have any questions. Good Luck!"
+    }
 }

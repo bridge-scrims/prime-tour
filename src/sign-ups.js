@@ -112,7 +112,7 @@ class PrimeTourSignups extends ExchangeHandler {
 
 }
 
-class PrimeTourSignupsFeature {
+class TournamentSignups {
 
     constructor(bot) {
 
@@ -155,4 +155,4 @@ class PrimeTourSignupsFeature {
 
 }
 
-module.exports = PrimeTourSignupsFeature;
+module.exports = TournamentSignups;

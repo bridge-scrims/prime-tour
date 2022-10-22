@@ -10,9 +10,36 @@ const THIS = '"_this"'
  */
 
 class SQLQueryBuilder {
+
+    /** 
+     * @protected
+     * @param {Object.<string, any>|Array.<string>} [parameters] 
+     */
+    _createFunctionParameters(parameters, values=[]) {
+        if (!parameters) return ["", values];
+        if (parameters instanceof Array) {
+            parameters = Object.fromEntries(parameters.map((v, i) => [i, v]))
+            return [new SQLStatementCreator(parameters).toFuncArgs(values), values]
+        }
+        return [new SQLStatementCreator(parameters).toFuncParams(values), values]
+    }
+
+    /**
+     * @param {string} functionName 
+     * @param {Object.<string, any>|Array.<string>} [parameters] 
+     */
+    buildFunctionCall(functionName, parameters) {
+        const [formatedParameters, values] = this._createFunctionParameters(parameters)
+        return [`SELECT ${functionName}(${formatedParameters})`, values]
+    }
+
+}
+
+class SQLTableQueryBuilder extends SQLQueryBuilder {
  
     constructor(table) {
         
+        super()
         Object.defineProperty(this, "table", { value: table })
 
         /** 
@@ -156,44 +183,6 @@ class SQLQueryBuilder {
         ]
     }
 
-    /** 
-     * @protected
-     * @param {Object.<string, any>|Array.<string>} [parameters] 
-     */
-    _createFunctionParameters(parameters, values=[]) {
-        if (!parameters) return ["", values];
-        if (parameters instanceof Array) return [this._sqlArrayParameterShaper(parameters, values).join(", "), values]
-        return [new SQLStatementCreator(parameters).toFuncParams(values), values]
-    }
-
-    /** 
-     * @protected 
-     * @param {Array.<string>} arr
-     * @param {Array.<string>} values
-     */
-    _sqlArrayParameterShaper(arr, values) {
-        return arr
-            .filter(v => v !== undefined)
-            .map(val => {
-                if (val?.$) return val.$
-                else if (val === null) return "NULL"
-                else {
-                    const v = `$${values.length + 1}`
-                    values.push(val)
-                    return v;
-                }
-            })
-    }
-
-    /**
-     * @param {string} functionName 
-     * @param {Object.<string, any>|Array.<string>} [parameters] 
-     */
-    buildFunctionCall(functionName, parameters) {
-        const [formatedParameters, values] = this._createFunctionParameters(parameters)
-        return [`SELECT ${functionName}(${formatedParameters})`, values]
-    }
-
 }
 
-module.exports = SQLQueryBuilder
+module.exports = { SQLQueryBuilder, SQLTableQueryBuilder };

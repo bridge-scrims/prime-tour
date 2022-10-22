@@ -1,7 +1,7 @@
-const MojangClient = require("./lib/middleware/mojang");
-const TableRow = require("./lib/postgresql/row");
 const MessageOptionsBuilder = require("./lib/tools/payload_builder");
+const MojangClient = require("./lib/middleware/mojang");
 const TimeUtil = require("./lib/tools/time_util");
+const TableRow = require("./lib/postgresql/row");
 
 class PrimeTourSignUp extends TableRow {
 

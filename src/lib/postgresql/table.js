@@ -1,5 +1,5 @@
 const SQLStatementCreator = require("./statements");
-const SQLQueryBuilder = require("./query");
+const { SQLTableQueryBuilder } = require("./query");
 const DBCache = require("./cache")
 const TableRow = require("./row");
 
@@ -19,7 +19,7 @@ class DBTable {
         /** @type {string} */
         this.name = name
 
-        this.queryBuilder = new SQLQueryBuilder(this)
+        this.queryBuilder = new SQLTableQueryBuilder(this)
 
         /** @type {DBCache<T>} */
         this.cache = new DBCache(cacheOptions)
@@ -57,11 +57,8 @@ class DBTable {
         return this.name;
     }
     
-    async query(...queryString) {
-        return this.client.query(
-            queryString.filter(v => (typeof v === "string")).join(" "), 
-            queryString.filter(v => v instanceof Array).flat()
-        ).then(v => this._getRows(v.rows));
+    async query(...query) {
+        return this.client.query(...query).then(v => this._getRows(v.rows));
     }
 
     async connect() {
@@ -84,10 +81,11 @@ class DBTable {
      * @param {string} functionName 
      * @param {Object.<string, any>|Array.<string>} [parameters] 
      */
-    async execute(functionName, parameters) {
+    async call(functionName, parameters) {
+        functionName = `${this}_${functionName}`
         const query = this.queryBuilder.buildFunctionCall(functionName, parameters)
         const result = await this.client.query(...query)
-        return result.rows?.[0]?.[functionName];
+        return this._getRows([result.rows?.[0]?.[functionName] ?? []].flat());
     }
 
     /** 

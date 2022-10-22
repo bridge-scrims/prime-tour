@@ -42,7 +42,7 @@ class DynamicallyConfiguredObjectCollection {
         this.created = {}
 
         // Adding the config type if it does not exist
-        this.database.guildEntryTypes.execute('ensure_guild_entry_type', [type]).catch(console.error)
+        this.database.call('ensure_guild_entry_type', [type]).catch(console.error)
 
         this.database.guildEntrys.cache.on('push', (...a) => this.onCacheCreate(...a).catch(console.error))
         this.database.guildEntrys.cache.on('update', (...a) => this.onCacheCreate(...a).catch(console.error))

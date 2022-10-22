@@ -45,6 +45,11 @@ class MessageOptionsBuilder {
         return this
     }
 
+    /** @param {(content: string) => string} editor */
+    editContent(editor) {
+        return this.setContent(editor(this.content))
+    }
+
     /** @param {BuilderOrBuildCall<EmbedBuilder>[]} embeds */
     addEmbeds(...embeds) {
         this.embeds.push(...resolveBuilders(EmbedBuilder, embeds))

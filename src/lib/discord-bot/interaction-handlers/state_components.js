@@ -1,4 +1,5 @@
 const { MessageFlags, InteractionType, ButtonBuilder, ActionRowBuilder, ModalBuilder, ButtonStyle } = require("discord.js");
+const MessageOptionsBuilder = require("../../tools/payload_builder");
 const LocalizedError = require("../../tools/localized_error");
 
 class StateComponentHandler {
@@ -91,6 +92,10 @@ class StateComponentHandler {
         state.index = parseInt(index)
     
         if (interaction.type === InteractionType.ModalSubmit && this.parser) {
+            if (interaction?.message?.flags?.has(MessageFlags.Ephemeral)) {
+                await interaction.deferUpdate()
+                await interaction.editReply(new MessageOptionsBuilder().setContent('Editing...')).catch(() => null)
+            }else await interaction.deferReply({ ephemeral: true })
             await this.parser.parseModalComponents(state, interaction, interaction.components.map(v => v.components).flat())
         }
 
@@ -147,7 +152,7 @@ class StateComponentHandler {
         return interaction.reply(response)
     }
 
-    /** @returns {import('../../types').BotCommand} */
+    /** @returns {import('../../types').ScrimsCommand} */
     asBotCommand() {
         return {
             command: this.customId,

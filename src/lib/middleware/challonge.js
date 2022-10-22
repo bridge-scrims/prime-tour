@@ -59,7 +59,7 @@ class ChallongeBracketClient {
 
     buildURL(path, parameters={}) {
         path = [this.tourneyId, ...path]
-        return `https://${SERVER}/tournaments/${path.join('/')}.json?api_key=${this.token}${Object.entries(parameters).map(([k, v]) => `&${k}=${v}`)}`;
+        return `https://${SERVER}/tournaments/${path.join('/')}.json?api_key=${this.token}${Object.entries(parameters).map(([k, v]) => `&${k}=${v}`).join('')}`;
     }
 
     async start() {
@@ -82,6 +82,12 @@ class ChallongeBracketClient {
     async getParticipants() {
         const response = await got.get(this.buildURL(['participants']), OPTIONS).catch(error => this.onError(error));
         return this.extractParticipants(response.body);
+    }
+
+    async getTournament() {
+        const url = this.buildURL([], { include_participants: 1, include_matches: 1 })
+        const response = await got.get(url, OPTIONS).catch(error => this.onError(error));
+        return this.formatTournament(response.body.tournament);
     }
     
     async startMatch(matchId) {

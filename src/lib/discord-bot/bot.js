@@ -120,7 +120,7 @@ class ScrimsBot extends Client {
     }
 
     getConfig(name) {
-        this.database.guildEntryTypes.execute('ensure_guild_entry_type', [name]).catch(console.error)
+        this.database.call('ensure_guild_entry_type', [name]).catch(console.error)
         return this.database.guildEntrys.cache.get({ type: { name } }).filter(v => !v.client_id || v.client_id === this.user.id);
     }
 

@@ -51,9 +51,10 @@ export interface ChallongeMatch {
     id: number,
     state: ChallongeMatchState,
     round: number,
-    player1_id: number,
-    player2_id: number,
-    started_at: string
+    player1_id: ?number,
+    player2_id: ?number,
+    underway_at: ?string,
+    started_at: ?string
 }
 
 export type ChallongeParticipants = { [x: string]: ChallongeParticipant }

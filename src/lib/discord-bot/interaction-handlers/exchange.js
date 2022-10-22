@@ -305,6 +305,8 @@ class ExchangeHandler extends StateComponentHandler {
         }
         const modal = this.getModal(interaction.state);
         if (!modal) {
+            await interaction.deferUpdate()
+            await interaction.editReply(new MessageOptionsBuilder().setContent('Submiting...')).catch(() => null)
             return this.onFinish(interaction).then(v => (typeof v === 'object') ? ({ ...v, last: true }) : v)
         }
         return modal;

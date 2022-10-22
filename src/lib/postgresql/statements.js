@@ -90,6 +90,14 @@ class SQLStatementCreator {
             .join(", ")
     }
 
+    createFuncArguments(obj, params) {
+        this.sqlParameterize(obj, params)
+        return Object.values(obj)
+            .filter(v => v !== undefined)
+            .map(v => `${(v === null) ? "NULL" : v}`)
+            .join(", ")
+    }
+
     /** @param {Object.<string, any>} obj */
     flaten(obj, params, prevParent) {
         Object.entries(obj)
@@ -160,6 +168,13 @@ class SQLStatementCreator {
         const obj = this.merge()
         if (Object.keys(obj).length === 0) return "";
         return this.createFuncParams(obj, params)
+    }
+
+    /** @returns {string} */
+    toFuncArgs(params) {
+        const obj = this.merge()
+        if (Object.keys(obj).length === 0) return "";
+        return this.createFuncArguments(obj, params)
     }
 
 }
