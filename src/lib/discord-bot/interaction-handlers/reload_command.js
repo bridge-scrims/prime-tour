@@ -19,7 +19,6 @@ module.exports = {
     handler: onReloadCommand,
     config: {
         permissions: { positionLevel: "staff", allowedUsers: ["568427070020124672"] },
-        forceGuild: false, denyWhenBlocked: true,
-        forceScrimsUser: false, ephemeralDefer: true,
+        forceGuild: false, defer: 'ephemeral_reply',
     }
 }

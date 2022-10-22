@@ -17,20 +17,21 @@ const tourneyCommand = require("./tourney_command");
 
 class PrimeTourBot extends ScrimsBot {
 
+    /** @param {import('./config.example.json')} config */
     constructor(config) {
 
         const intents = [ 
             GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildVoiceStates, 
             GatewayIntentBits.GuildPresences
         ]
-        const presence = { status: "online", activities: [{ name: 'your sign-ups', type: ActivityType.Watching }]}
+        const presence = { status: "online", activities: [{ name: 'Season 2', type: ActivityType.Playing }]}
 
         super({ intents, presence, config, Database: PrimeTourBotDatabase });
 
         /** @type {PrimeTourBotDatabase} */
         this.database
 
-        this.bracket = new ChallongeBracketClient(config.challonge_token, 11859800)
+        this.bracket = new ChallongeBracketClient(config.challonge_token, config.tourney_id)
         this.signups = new TournamentSignups(this, config)
 
         this.commands.add(tourneyCommand)

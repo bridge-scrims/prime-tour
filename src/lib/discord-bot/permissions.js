@@ -1,10 +1,11 @@
 const { GuildMember, Guild, User } = require("discord.js");
 const UserPermissionsCollection = require('../scrims/collections/user_permissions');
-const DBPermissionData = require("../scrims/permission_data");
 const SQLStatementCreator = require("../postgresql/statements");
+const DBPermissionData = require("../scrims/permission_data");
+const PositionRole = require("../scrims/position_role");
 const UserProfile = require("../scrims/user_profile");
 const Position = require("../scrims/position");
-const PositionRole = require("../scrims/position_role");
+
 
 /**
  * Manages the permissions of `Users`, using their `UserId`, `UserPermissionsCollection` and `GuildMember`.  

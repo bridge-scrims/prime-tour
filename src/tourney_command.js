@@ -1,15 +1,24 @@
 const { 
     LocalizedSlashCommandBuilder, LocalizedSlashCommandSubcommandBuilder 
 } = require("./lib/discord-bot/tools/localized_builders");
+const { PermissionFlagsBits, OverwriteType } = require("discord.js");
 
 const categoryLimitSafeCreate = require("./lib/discord-bot/tools/category_expander");
 const LocalizedError = require("./lib/tools/localized_error");
 const TimeUtil = require("./lib/tools/time_util");
 
+
 const Options = {
     Round: "round",
     Length: "length"
 }
+
+const CHANNEL_PERMISSIONS = [
+    PermissionFlagsBits.ViewChannel,
+    PermissionFlagsBits.SendMessages,
+    PermissionFlagsBits.SendMessagesInThreads,
+    PermissionFlagsBits.ReadMessageHistory
+]
 
 /** @param {import("./lib/types").ScrimsChatInputCommandInteraction & import('./bot').Base} interaction */
 async function startTourneyCommand(interaction) {
@@ -23,8 +32,8 @@ async function startTourneyCommand(interaction) {
     const tourney = await interaction.client.bracket.getTournament()
 
     const resolveParticipant = (id) => tourney.participants[id];
+    const participantUserId = (id) => resolveParticipant(id).misc;
     const participantName = (id) => resolveParticipant(id).name;
-    const formatName = (name) => name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase().substring(0, 14);
 
     const matches = Object.values(tourney.matches).filter(m => m.round === round && m.player1_id && m.player2_id)
     const existing = (await interaction.client.database.matches.sqlFetch()).map(m => m.match_id)
@@ -33,7 +42,13 @@ async function startTourneyCommand(interaction) {
     const parent = interaction.client.getConfigValue(interaction.guildId, 'tourney_match_category', interaction.channel?.parentId) || null
     const channels = await categoryLimitSafeCreate(
         interaction.guild, parent,
-        newMatches.map(m => ({ name: `${formatName(participantName(m.player1_id))}-vs-${formatName(participantName(m.player2_id))}` }))
+        newMatches.map(m => ({ 
+            name: `${participantName(m.player1_id)}-vs-${participantName(m.player2_id)}`
+                .toLowerCase().replace(/[^a-zA-Z0-9]/g, '').substring(0, 32),
+            permissionOverwrites: [m.player1_id, m.player2_id]
+                .map(p => ({ id: participantUserId(p), allow: CHANNEL_PERMISSIONS, type: OverwriteType.Member }))
+                .concat({ id: interaction.guildId, deny: CHANNEL_PERMISSIONS })
+        }))
     )
 
     try {
@@ -46,7 +61,7 @@ async function startTourneyCommand(interaction) {
         )
         await Promise.all(
             matches.map(
-                (m, i) => channels[i]?.send(m.buildIntroMessage(interaction.i18n, round, Math.floor(end.valueOf()/1000)))
+                (m, i) => channels[i]?.send(m.getIntroMessage(interaction.i18n, round, Math.floor(end.valueOf()/1000)))
                     ?.catch(err => console.warn(`Unable to send message in ${channels[i]?.id}: ${err}!`))
             )
         )
@@ -103,6 +118,9 @@ module.exports = {
                         .setNameAndDescription('commands.tourney.game_score_option', 4)
                 )
         ).setNameAndDescription("commands.tourney"),
-    config: { permissions: { allowedPermissions: ['Administrator'] }, ephemeralDefer: true },
+    config: { 
+        permissions: { allowedPermissions: ['Administrator'] }, 
+        forceGuild: true, defer: 'ephemeral_reply' 
+    },
     handler: startTourneyCommand
 }

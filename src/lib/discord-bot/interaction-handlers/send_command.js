@@ -40,5 +40,5 @@ module.exports = {
                 .setRequired(true)
         ),
     handler: onSendCommand, 
-    config: { forceGuild: true, ephemeralDefer: true } 
+    config: { forceGuild: true, defer: 'ephemeral_reply' } 
 }

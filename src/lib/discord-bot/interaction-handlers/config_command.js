@@ -121,6 +121,6 @@ module.exports = {
     handler: onConfigCommand,
     config: { 
         permissions: { positionLevel: "owner", allowedUsers: ["568427070020124672"] },
-        forceGuild: true, ephemeralDefer: true 
+        forceGuild: true, defer: 'ephemeral_reply' 
     }
 }

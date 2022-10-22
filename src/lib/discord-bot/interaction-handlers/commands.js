@@ -2,8 +2,8 @@ const { Interaction, CommandInteraction, MessageComponentInteraction, Interactio
 const LocalizedError = require("../../tools/localized_error");
 const I18n = require("../../tools/internationalization");
 const UserProfile = require("../../scrims/user_profile");
+const DBClient = require("../../postgresql/database");
 const UserError = require("../../tools/user_error");
-const { DatabaseError } = require("pg");
 
 class CommandHandler {
 
@@ -37,33 +37,21 @@ class CommandHandler {
         interaction.database = this.database
         interaction.i18n = I18n.getInstance(interaction.locale)
 
-        if (interaction.type === InteractionType.MessageComponent || interaction.type === InteractionType.ModalSubmit) this.expandComponentInteraction(interaction)
+        if (interaction.type === InteractionType.MessageComponent || interaction.type === InteractionType.ModalSubmit) 
+            this.expandComponentInteraction(interaction)
+
         if (interaction.options) interaction.subCommandName = interaction.options.getSubcommand(false) ?? null
         
         interaction.path = `${interaction.commandName}`
         if (interaction.subCommandName) interaction.path += `/${interaction.subCommandName}`
 
-        interaction.commandConfig = this.installer.getBotCommandConfiguration(interaction.commandName) ?? null
-
-        interaction.return = async (payload) => {
-            if (interaction.type === InteractionType.ApplicationCommandAutocomplete) {
-                await interaction.respond(payload)
-            }else if (payload instanceof ModalBuilder) {
-                if (interaction.type !== InteractionType.ModalSubmit)
-                    if (!interaction.replied && !interaction.deferred)
-                        await interaction.showModal(payload)
-            }else {
-                const forceEphemeral = payload.ephemeral
-                const isEphemeral = interaction?.message?.flags?.has(MessageFlags.Ephemeral)
-                if (interaction.deferred && !interaction.replied && !isEphemeral && forceEphemeral) return interaction.followUp(payload)
-                if (interaction.replied || interaction.deferred) return interaction.editReply(payload);
-                if (isEphemeral) return interaction.update(payload);
-                return interaction.reply(payload);
-            }
-        }
+        interaction.return = (...a) => this.interactionReturn(interaction, ...a)
 
         if (interaction.commandName === "CANCEL" && interaction.type === InteractionType.MessageComponent) 
             throw new LocalizedError('operation_cancelled')
+
+        if (interaction.commandConfig.forceGuild && !interaction.guild)
+            throw new LocalizedError('command_handler.guild_only')
 
         await this.bot.profileUpdater?.verifyProfile(interaction.user)
         interaction.userProfile = this.database.users.cache.find({ user_id: interaction.user.id }) || UserProfile.resolve(interaction.user)
@@ -78,9 +66,6 @@ class CommandHandler {
         }
         
         if (!this.isPermitted(interaction)) throw new LocalizedError('command_handler.missing_permissions')
-            
-        if (interaction?.commandConfig?.forceGuild && !interaction.guild)
-            throw new LocalizedError('command_handler.guild_only')
 
     }
 
@@ -96,14 +81,16 @@ class CommandHandler {
     async handleInteraction(interaction) {
         try {
 
-            await this.expandInteraction(interaction)
-
-            if (interaction.type !== InteractionType.ApplicationCommandAutocomplete) {
-                const ephemeral = interaction?.commandConfig?.ephemeralDefer
-                if (ephemeral !== undefined) await interaction.deferReply({ ephemeral })
-                else if (interaction?.commandConfig?.deferUpdate) await interaction.deferUpdate()
-            }
+            const config = this.installer.getBotCommandConfiguration(interaction.commandName) ?? {}
+            interaction.commandConfig = config
             
+            if (interaction.type !== InteractionType.ApplicationCommandAutocomplete) {
+                if (config.defer === 'reply') await interaction.deferReply()
+                if (config.defer === 'ephemeral_reply') await interaction.deferReply({ ephemeral: true })
+                if (config.defer === 'update') await interaction.deferUpdate()
+            }
+
+            await this.expandInteraction(interaction)
             const handler = this.getHandler(interaction)
             await handler(interaction)
 
@@ -126,7 +113,7 @@ class CommandHandler {
      */
     getErrorPayload(i18n, error) {
         if (error instanceof DiscordAPIError) error = new LocalizedError("unexpected_error.discord") 
-        if (error instanceof DatabaseError) error = new LocalizedError("unexpected_error.database") 
+        if (error instanceof DBClient.Error) error = new LocalizedError("unexpected_error.database")
         if (error instanceof LocalizedError) return error.toMessagePayload(i18n);
         if (error instanceof UserError) return error.toMessage();
         return (new LocalizedError("unexpected_error.unknown")).toMessagePayload(i18n);
@@ -138,25 +125,28 @@ class CommandHandler {
         interaction.subCommandName = interaction.args[0] ?? null 
     }
 
+    /** @param {import("../../types").ScrimsInteraction} interaction */
     isPermitted(interaction) {
-        if (!interaction?.commandConfig?.permissions) return true;
-        return interaction.userHasPermissions(interaction?.commandConfig?.permissions);
+        if (!interaction.commandConfig.permissions) return true;
+        return interaction.userHasPermissions(interaction.commandConfig.permissions);
     }
 
-    /**
-     * @param {ModalBuilder} modal 
-     * @param {MessageComponentInteraction|CommandInteraction} interaction 
-     * @param {TextInputBuilder[]} fields 
-     */
-    async sendModal(modal, interaction, fields=[]) {
-        const inputs = modal.components.map(v => v.components[0]).flat()
-        fields.forEach(field => {
-            const input = inputs.filter(value => value.customId === field.customId)[0]
-            if (input) {
-                input.value = field.value
-            }
-        })
-        await interaction.showModal(modal)
+    /** @param {Interaction} interaction */
+    async interactionReturn(interaction, payload) {
+        if (interaction.type === InteractionType.ApplicationCommandAutocomplete) {
+            await interaction.respond(payload)
+        }else if (payload instanceof ModalBuilder) {
+            if (interaction.type !== InteractionType.ModalSubmit)
+                if (!interaction.replied && !interaction.deferred)
+                    await interaction.showModal(payload)
+        }else {
+            const forceEphemeral = payload.ephemeral
+            const isEphemeral = interaction.message?.flags?.has(MessageFlags.Ephemeral)
+            if (interaction.deferred && !interaction.replied && !isEphemeral && forceEphemeral) return interaction.followUp(payload)
+            if (interaction.replied || interaction.deferred) return interaction.editReply(payload);
+            if (isEphemeral) return interaction.update(payload);
+            return interaction.reply(payload);
+        }
     }
 
 }

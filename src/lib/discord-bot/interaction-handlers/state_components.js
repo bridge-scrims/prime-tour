@@ -152,12 +152,11 @@ class StateComponentHandler {
         return interaction.reply(response)
     }
 
-    /** @returns {import('../../types').ScrimsCommand} */
+    /** @returns {import('../../types').BotCommand} */
     asBotCommand() {
         return {
             command: this.customId,
-            handler: (async interaction => this.handle(interaction)),
-            config: { denyWhenBlocked: (!!this.stateManager) }
+            handler: (async interaction => this.handle(interaction))
         };
     }
 

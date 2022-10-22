@@ -28,7 +28,10 @@ const DBTable = require('./table');
 
 const EventEmitter = require('events');
 
+class DBError extends Error {}
 class DBClient extends EventEmitter {
+
+    static Error = DBError
 
     constructor(config, bot=null) {
 
@@ -282,20 +285,24 @@ class DBClient extends EventEmitter {
      * @param {(any[] | string)[]} query 
      */
     async query(...query) {
-        const result = await this.client.query(
-            query.filter(v => (typeof v === "string")).join(" "), 
-            query.filter(v => v instanceof Array).flat()
-        )
-        if (result.fields && result.rows) {
-            const bigintColumns = result.fields.filter(f => f.dataTypeID === 20).map(v => v.name)
-            for (const row of result.rows) {
-                for (const column of bigintColumns) {
-                    const num = parseInt(row?.[column])
-                    if (Number.isSafeInteger(num)) row[column] = num
-                }
-            } 
+        try {
+            const result = await this.client.query(
+                query.filter(v => (typeof v === "string")).join(" "), 
+                query.filter(v => v instanceof Array).flat()
+            )
+            if (result.fields && result.rows) {
+                const bigintColumns = result.fields.filter(f => f.dataTypeID === 20).map(v => v.name)
+                for (const row of result.rows) {
+                    for (const column of bigintColumns) {
+                        const num = parseInt(row?.[column])
+                        if (Number.isSafeInteger(num)) row[column] = num
+                    }
+                } 
+            }
+            return result;
+        }catch (err) {
+            throw new DBError(err?.message)
         }
-        return result;
     }
   
 }

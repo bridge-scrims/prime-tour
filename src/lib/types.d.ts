@@ -38,11 +38,7 @@ export interface BotCommandConfig {
     permissions?: ScrimsPermissions;
     guilds?: string[];
     forceGuild?: boolean;
-    forceScrimsUser?: boolean;
-    ephemeralDefer?: boolean;
-    deferUpdate?: boolean;
-    denyWhenBlocked?: boolean;
-    forceInstallHostGuild?: boolean
+    defer: 'update' | 'reply' | 'ephemeral_reply';
 }
 
 export interface BotCommand {
@@ -67,6 +63,7 @@ export interface ScrimsInteraction extends BaseInteraction {
     user: PermissibleUser;
     member?: PermissibleMember;
     userPermissions: ?UserPermissionsCollection;
+    commandConfig: BotCommandConfig;
 
     path: string;
     commandName: string | null;

@@ -5,6 +5,7 @@
     "hypixel_token": "",
 
     "host_guild_id": "759894401957888031",
+    "tourney_id": 0,
     
     "database": {
         "hostname": "",
