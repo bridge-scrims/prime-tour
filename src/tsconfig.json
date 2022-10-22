@@ -1,0 +1,7 @@
+{
+    "compilerOptions": {
+        "resolveJsonModule": true
+    },
+    "exclude": [".d.ts"],
+    "include": [".ts"]
+}

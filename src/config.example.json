@@ -1,0 +1,18 @@
+{
+    
+    "discord_token": "",
+    "hypixel_token": "",
+
+    "host_guild_id": "759894401957888031",
+
+    "database": {
+        "hostname": "",
+        "port": 8032,
+
+        "username": "bot",
+        "password": "",
+
+        "database": "support_bot"
+    }
+
+}
