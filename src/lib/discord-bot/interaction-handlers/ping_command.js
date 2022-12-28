@@ -13,5 +13,7 @@ module.exports = {
         .setName("ping")
         .setDescription("Used to test the bots connection."),
     handler: onPingCommand,
-    config: { forceGuild: false, defer: 'ephemeral_reply' }
+    config: {
+        forceGuild: false, forceScrimsUser: false, defer: 'ephemeral_reply'
+    }
 }

@@ -74,7 +74,7 @@ class DBTable {
     }
 
     async initializeCache() {
-        await this.sqlFetch({})
+        await this.sqlFetch()
     }
 
     /**
@@ -187,7 +187,7 @@ class DBTable {
      * @param {Object.<string, any>|T|string|number|Array.<string>} selector
      */
     async del(selector) {
-        return this.delete(selector).then(v => v[0]);
+        return this.delete(selector).then(v => v[0] || null);
     }
 
     /**
@@ -232,7 +232,7 @@ class DBTable {
     async sqlFind(selector, options = {}) {
         if (!this.exists) return null;
         options.limit = (options.forceSingle ? 2 : 1)
-        const query = this.queryBuilder.buildSelectQuery(this._getStatement(selector))
+        const query = this.queryBuilder.buildSelectQuery(this._getStatement(selector), options)
         const rows = await this.query(...query)
         rows.forEach(row => this.cache.push(row))
         if (rows.length !== 1) return null;
@@ -311,11 +311,12 @@ class DBTable {
     }
 
     /** 
-     * @param {T|Object.<string, any>} obj 
+     * @param {T|Object.<string, any>|(builder: T) => T} obj 
      * @returns {Promise<T>}
      */
     async create(obj) {
         if (!this.exists) return null;
+        if (typeof obj === 'function') obj = obj(new this.RowClass(this.client))
         if (obj.id) this.cache.push(obj)
         const query = this.queryBuilder.buildInsertQuery((obj instanceof TableRow) ? obj.toSQLData() : obj)
         const result = await this.query(...query).catch(error => error)

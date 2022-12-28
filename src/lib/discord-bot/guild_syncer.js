@@ -1,5 +1,5 @@
 const { Events, BaseGuild } = require("discord.js")
-const DBGuild = require("../scrims/guild")
+const DBGuild = require("../database/guild")
 
 class DBGuildUpdater {
 

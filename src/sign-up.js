@@ -1,6 +1,5 @@
-const MessageOptionsBuilder = require("./lib/tools/payload_builder");
-const MojangClient = require("./lib/middleware/mojang");
-const TimeUtil = require("./lib/tools/time_util");
+const { Colors, TimeUtil, MessageOptionsBuilder } = require("./lib");
+const MojangClient = require("./lib/apis/mojang");
 const TableRow = require("./lib/postgresql/row");
 
 class PrimeTourSignUp extends TableRow {
@@ -74,7 +73,7 @@ class PrimeTourSignUp extends TableRow {
             .addEmbeds(
                 e => e
                     .setTitle('You are Signed-Up!')
-                    .setColor(this.COLORS.BrightSeaGreen)
+                    .setColor(Colors.BrightSeaGreen)
                     .setDescription('You will be mentioned about any information regarding the tournament.')
                     .setThumbnail(this.mcHeadURL())
                     .addFields(

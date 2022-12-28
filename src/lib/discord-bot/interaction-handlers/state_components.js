@@ -156,7 +156,8 @@ class StateComponentHandler {
     asBotCommand() {
         return {
             command: this.customId,
-            handler: (async interaction => this.handle(interaction))
+            handler: (async interaction => this.handle(interaction)),
+            config: { denyWhenBlocked: (!!this.stateManager) }
         };
     }
 

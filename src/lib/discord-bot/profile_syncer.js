@@ -1,5 +1,5 @@
 const { Guild, User, GuildMember, Events, BaseGuild } = require("discord.js")
-const UserProfile = require("../scrims/user_profile")
+const UserProfile = require("../database/user_profile")
 
 class UserProfileUpdater {
 
@@ -78,17 +78,16 @@ class UserProfileUpdater {
      */
     async verifyProfile(user, profiles) {
         const profile = profiles ? profiles[user.id] : this.bot.database.users.cache.find({ user_id: user.id })
-        if (!profile) await this.createProfile(user)
-        else {
-            if (!profiles) await this.update(user, profile)
-        }
+        if (!profile) return this.createProfile(user)
+        else if (!profiles) await this.update(user, profile)
+        return profile;
     }
     
     /** 
      * @param {User} user
      */
     async createProfile(user) {
-        await this.bot.database.users.create(UserProfile.fromUser(user))
+        return this.bot.database.users.create(UserProfile.fromUser(user))
             .catch(error => console.error(`Unable to make profile for ${user.id}! (${error})`))
     }
 

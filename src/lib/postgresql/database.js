@@ -3,24 +3,28 @@ const pgIPC = require('pg-ipc');
 
 const { v4: uuidv4 } = require("uuid");
 
-const TicketMessageAttachment = require('../scrims/ticket_message_attachment');
-const DBSessionParticipant = require('../scrims/session_participant');
-const GameParticipant = require('../scrims/game_participant');
-const TicketMessage = require('../scrims/ticket_message');
-const UserPosition = require('../scrims/user_position');
-const PositionRole = require('../scrims/position_role');
-const TicketStatus = require('../scrims/ticket_status');
-const GuildEntry = require('../scrims/guild_entry');
-const Suggestion = require('../scrims/suggestion');
-const DBAttachment = require('../scrims/attachment');
-const UserProfile = require('../scrims/user_profile');
-const Position = require('../scrims/position');
-const DBSession = require('../scrims/session');
-const ScrimsVouch = require('../scrims/vouch');
-const Ticket = require("../scrims/ticket");
-const DBGuild = require('../scrims/guild');
-const DBGame = require('../scrims/game');
-const DBType = require('../scrims/type');
+const SessionParticipant = require('../database/session_participant');
+const Session = require('../database/session');
+
+const GameParticipant = require('../database/game_participant');
+const Game = require('../database/game');
+
+const DiscordAttachment = require('../database/attachment');
+const TicketMessage = require('../database/ticket_message');
+const TicketStatus = require('../database/ticket_status');
+const Ticket = require("../database/ticket");
+
+const UserProfile = require('../database/user_profile');
+const GuildProfile = require('../database/guild');
+const Position = require('../database/position');
+const DBType = require('../database/type');
+
+const PositionRole = require('../database/position_role');
+const UserPosition = require('../database/user_position');
+const GuildEntry = require('../database/guild_entry');
+
+const Suggestion = require('../database/suggestion');
+const Vouch = require('../database/vouch');
 
 const SQLStatementCreator = require('./statements');
 const { SQLQueryBuilder } = require('./query');
@@ -79,9 +83,9 @@ class DBClient extends EventEmitter {
          * @type {DBTable[]} 
          */
         this._tables = []
-        this.__addScrimsTables()
+        this._addScrimsTables()
         
-        /** @type {DBTable<DBGuild>} */
+        /** @type {DBTable<GuildProfile>} */
         this.guilds
 
         /** @type {DBTable<UserProfile>} */
@@ -93,7 +97,7 @@ class DBClient extends EventEmitter {
         /** @type {DBTable<UserPosition>} */
         this.userPositions
 
-        /** @type {DBTable<DBAttachment>} */
+        /** @type {DBTable<DiscordAttachment>} */
         this.attachments
 
         /** @type {DBTable<PositionRole>} */
@@ -103,13 +107,10 @@ class DBClient extends EventEmitter {
         this.guildEntryTypes
 
         /** @type {DBTable<GuildEntry>} */
-        this.guildEntrys
+        this.guildEntries
 
         /** @type {DBTable<TicketMessage>} */
         this.ticketMessages
-
-        /** @type {DBTable<TicketMessageAttachment>} */
-        this.ticketMessageAttachments
 
         /** @type {DBTable<DBType>} */
         this.ticketTypes
@@ -123,61 +124,62 @@ class DBClient extends EventEmitter {
         /** @type {DBTable<DBType>} */
         this.sessionTypes
 
-        /** @type {DBTable<DBSession>} */
+        /** @type {DBTable<Session>} */
         this.sessions
 
-        /** @type {DBTable<DBSessionParticipant>} */
+        /** @type {DBTable<SessionParticipant>} */
         this.sessionParticipants
 
         /** @type {DBTable<Suggestion} */
         this.suggestions
 
-        /** @type {ScrimsVouch.Table} */
+        /** @type {Vouch.Table} */
         this.vouches
 
         /** @type {DBTable<DBType>} */
         this.gameTypes
 
-        /** @type {DBTable<DBGame>} */
+        /** @type {DBTable<Game>} */
         this.games
 
         /** @type {DBTable<GameParticipant>} */
         this.gameParticipants
 
+        /** @type {DBTable<VoiceChannelSession>} */
+        this.voiceSessions
+
     }
 
-    /** @private */
-    __addScrimsTables() {
+    /** @protected */
+    _addScrimsTables() {
 
-        this._addTable("guilds", new DBTable(this, 'scrims_guild', { lifeTime: -1 }, DBGuild))
-        this._addTable("users", new DBTable(this, 'scrims_user', { lifeTime: -1 }, UserProfile))
-        this._addTable("positions", new DBTable(this, "scrims_position", { lifeTime: -1 }, Position))
-        this._addTable("attachments", new DBTable(this, "scrims_attachment", { lifeTime: -1 }, DBAttachment))
+        this._addTable("guilds", new DBTable(this, 'guild_profile', { lifeTime: -1 }, GuildProfile))
+        this._addTable("users", new DBTable(this, 'user_profile', { lifeTime: -1 }, UserProfile))
+        this._addTable("positions", new DBTable(this, "position", { lifeTime: -1 }, Position))
+        this._addTable("attachments", new DBTable(this, "attachment", { lifeTime: -1 }, DiscordAttachment))
 
-        this._addTable("userPositions", new DBTable(this, "scrims_user_position", {}, UserPosition))
-        this._addTable("positionRoles", new DBTable(this, "scrims_position_role", { lifeTime: -1 }, PositionRole))
+        this._addTable("userPositions", new DBTable(this, "user_position", {}, UserPosition))
+        this._addTable("positionRoles", new DBTable(this, "position_role", { lifeTime: -1 }, PositionRole))
 
-        this._addTable("guildEntryTypes", new DBTable(this, "scrims_guild_entry_type", { lifeTime: -1 }, DBType))
-        this._addTable("guildEntrys", new DBTable(this, "scrims_guild_entry", { lifeTime: -1 }, GuildEntry))
+        this._addTable("guildEntryTypes", new DBTable(this, "guild_entry_type", { lifeTime: -1 }, DBType))
+        this._addTable("guildEntries", new DBTable(this, "guild_entry", { lifeTime: -1 }, GuildEntry))
 
-        this._addTable("ticketMessages", new DBTable(this, "scrims_ticket_message", {}, TicketMessage))
-        this._addTable("ticketMessageAttachments", new DBTable(this, "scrims_ticket_message_attachment", {}, TicketMessageAttachment))
+        this._addTable("ticketMessages", new DBTable(this, "ticket_message", {}, TicketMessage))
+        this._addTable("ticketTypes", new DBTable(this, 'ticket_type', { lifeTime: -1 }, DBType))
+        this._addTable("ticketStatuses", new DBTable(this, 'ticket_status', { lifeTime: -1 }, TicketStatus))
+        this._addTable("tickets", new DBTable(this, 'ticket', {}, Ticket))
 
-        this._addTable("ticketTypes", new DBTable(this, 'scrims_ticket_type', { lifeTime: -1 }, DBType))
-        this._addTable("ticketStatuses", new DBTable(this, 'scrims_ticket_status', { lifeTime: -1 }, TicketStatus))
-        this._addTable("tickets", new DBTable(this, 'scrims_ticket', {}, Ticket))
-
-        this._addTable("sessionTypes", new DBTable(this, "scrims_session_type", { lifeTime: -1 }, DBType))
-        this._addTable("sessions", new DBTable(this, "scrims_session", { lifeTime: -1 }, DBSession))
+        this._addTable("sessionTypes", new DBTable(this, "session_type", { lifeTime: -1 }, DBType))
+        this._addTable("sessions", new DBTable(this, "session", { lifeTime: -1 }, Session))
         
-        this._addTable("sessionParticipants", new DBTable(this, "scrims_session_participant", {}, DBSessionParticipant))
-        this._addTable("suggestions", new DBTable(this, "scrims_suggestion", {}, Suggestion))
+        this._addTable("sessionParticipants", new DBTable(this, "session_participant", {}, SessionParticipant))
+        this._addTable("suggestions", new DBTable(this, "suggestion", {}, Suggestion))
         
-        this._addTable("vouches", new ScrimsVouch.Table(this))
+        this._addTable("vouches", new Vouch.Table(this))
 
-        this._addTable("gameTypes", new DBTable(this, "scrims_game_type", { lifeTime: -1 }, DBType))
-        this._addTable("games", new DBTable(this, "scrims_game", {}, DBGame))
-        this._addTable("gameParticipants", new DBTable(this, "scrims_game_participant", {}, GameParticipant))
+        this._addTable("gameTypes", new DBTable(this, "game_type", { lifeTime: -1 }, DBType))
+        this._addTable("games", new DBTable(this, "game", {}, Game))
+        this._addTable("gameParticipants", new DBTable(this, "game_participant", {}, GameParticipant))
 
     }
 

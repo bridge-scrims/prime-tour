@@ -7,7 +7,7 @@ const ASSETS = path.join('src', 'assets');
 
 /**
  * @callback MessageBuilder
- * @argument {import('./types').DBGuildMember} member
+ * @argument {import('./types').GuildProfileMember} member
  * @returns {Promise<MessageOptions>|MessageOptions>}
  */
 

@@ -68,14 +68,11 @@ class DBCache extends EventEmitter {
      */
     setAll(values) {
         const oldKeys = this.keys()
-
         const newData = Object.fromEntries(values.filter(value => !value.isCacheExpired()).map(value => [value.id, value]))
-        const newKeys = Object.keys(newData)
-
-        const added = values.filter(value => value.id).filter(value => !(value.id in this.data))
         
-        // If all of the new data is already added we do not need to emit all those push events
-        if (added.length !== newKeys.length) added.forEach(value => this.emit('push', value.clone()))
+        values
+            .filter(value => value.id).filter(value => !(value.id in this.data))
+            .forEach(value => this.emit('push', value.clone()))
 
         oldKeys.filter(key => !(key in newData)).forEach(key => this.remove(key))
         this.data = newData

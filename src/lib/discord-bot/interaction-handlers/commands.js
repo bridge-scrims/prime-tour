@@ -1,7 +1,7 @@
-const { Interaction, CommandInteraction, MessageComponentInteraction, InteractionType, DiscordAPIError, MessageFlags, ModalBuilder } = require("discord.js");
+const { Interaction, InteractionType, DiscordAPIError, MessageFlags, ModalBuilder } = require("discord.js");
 const LocalizedError = require("../../tools/localized_error");
 const I18n = require("../../tools/internationalization");
-const UserProfile = require("../../scrims/user_profile");
+const UserProfile = require("../../database/user_profile");
 const DBClient = require("../../postgresql/database");
 const UserError = require("../../tools/user_error");
 
@@ -32,13 +32,8 @@ class CommandHandler {
     /** @param {Interaction} interaction */
     async expandInteraction(interaction) {
         
-        interaction.CONSTANTS = this.bot.CONSTANTS
-        interaction.COLORS = this.bot.COLORS
         interaction.database = this.database
         interaction.i18n = I18n.getInstance(interaction.locale)
-
-        if (interaction.type === InteractionType.MessageComponent || interaction.type === InteractionType.ModalSubmit) 
-            this.expandComponentInteraction(interaction)
 
         if (interaction.options) interaction.subCommandName = interaction.options.getSubcommand(false) ?? null
         
@@ -50,7 +45,7 @@ class CommandHandler {
         if (interaction.commandName === "CANCEL" && interaction.type === InteractionType.MessageComponent) 
             throw new LocalizedError('operation_cancelled')
 
-        if (interaction.commandConfig.forceGuild && !interaction.guild)
+        if (interaction.commandConfig?.forceGuild && !interaction.guild)
             throw new LocalizedError('command_handler.guild_only')
 
         await this.bot.profileUpdater?.verifyProfile(interaction.user)
@@ -81,6 +76,9 @@ class CommandHandler {
     async handleInteraction(interaction) {
         try {
 
+            if (interaction.customId?.startsWith('_')) return;
+            if (interaction.type === InteractionType.MessageComponent || interaction.type === InteractionType.ModalSubmit) 
+                this.expandComponentInteraction(interaction)
             const config = this.installer.getBotCommandConfiguration(interaction.commandName) ?? {}
             interaction.commandConfig = config
             
@@ -95,14 +93,18 @@ class CommandHandler {
             await handler(interaction)
 
         }catch(error) {
-            if (![10062].includes(error.code)) {
-                if (!(error instanceof UserError) && !(error instanceof LocalizedError))
-                    console.error(`Unexpected error while handling a command!`, error)
+            await this.handleInteractionError(interaction, error)
+        }
+    }
 
-                if (interaction.type !== InteractionType.ApplicationCommandAutocomplete) {
-                    const payload = this.getErrorPayload(interaction.i18n, error)
-                    await interaction.return(payload).catch(() => null)
-                }
+    async handleInteractionError(interaction, error) {
+        if (![10062].includes(error.code)) {
+            if (!(error instanceof UserError) && !(error instanceof LocalizedError))
+                console.error(`Unexpected error while handling a command!`, error)
+
+            if (interaction.type !== InteractionType.ApplicationCommandAutocomplete && interaction.i18n && interaction.return) {
+                const payload = this.getErrorPayload(interaction.i18n, error)
+                await interaction.return(payload).catch(() => null)
             }
         }
     }
@@ -127,7 +129,7 @@ class CommandHandler {
 
     /** @param {import("../../types").ScrimsInteraction} interaction */
     isPermitted(interaction) {
-        if (!interaction.commandConfig.permissions) return true;
+        if (!interaction.commandConfig?.permissions) return true;
         return interaction.userHasPermissions(interaction.commandConfig.permissions);
     }
 

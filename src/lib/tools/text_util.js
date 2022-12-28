@@ -6,40 +6,29 @@ class TextUtil {
 
     /**
      * @param {string} resolvable 
-     * @param {import('../scrims/user_profile')[]} profiles 
+     * @param {import('../database/user_profile')[]} profiles 
      * @param {Guild} guild 
-     * @returns {import('../scrims/user_profile')|GuildMember|null}
+     * @returns {import('../database/user_profile')|GuildMember|null}
      */
     static parseUser(resolvable, profiles, guild) {
         resolvable = resolvable.replace(/```|:|\n|@/g, '')
-        
-        for (const key of ['user_id', 'tag', 'username']) {
-            const matches = profiles.filter(user => user[key] === resolvable)
-            if (matches.length === 1) return matches[0];
-        }
+        const dbMatches = profiles.filter(user => [user.user_id, user.tag, user.username].includes(resolvable))
+        if (dbMatches.length === 1) return dbMatches[0];
 
         if (guild) {
             const members = Array.from(guild.members.cache.values())
-            for (const keys of [['id'], ['user', 'tag'], ['displayName'], ['user', 'username']]) {
-                const matches = members.filter(m => keys.reduce((pv, cv) => pv?.[cv], m) === resolvable)
-                if (matches.length === 1) return matches[0].user;
-            }
+            const displayNameMatches = members.filter(user => user.displayName === resolvable)
+            if (displayNameMatches.length === 1) return displayNameMatches[0].user;
+
+            const tagMatches = members.filter(m => m.user.tag === resolvable)
+            if (tagMatches.length === 1) return tagMatches[0].user;
         }
 
-        // Caseless Matching
-        for (const key of ['user_id', 'tag', 'username']) {
-            const matches = profiles.filter(user => user[key]?.toLowerCase() === resolvable.toLowerCase())
-            if (matches.length === 1) return matches[0];
-        }
-
-        if (guild) {
-            const members = Array.from(guild.members.cache.values())
-            for (const keys of [['id'], ['user', 'tag'], ['displayName'], ['user', 'username']]) {
-                const matches = members.filter(m => keys.reduce((pv, cv) => pv?.[cv], m)?.toLowerCase() === resolvable.toLowerCase())
-                if (matches.length === 1) return matches[0].user;
-            }
-        }
-
+        const caselessDBMatches = profiles.filter(user => (
+            [user.user_id, user.tag, user.username]
+                .filter(v => v).map(v => v.toLowerCase()).includes(resolvable.toLowerCase())
+        ))
+        if (caselessDBMatches.length === 1) return caselessDBMatches[0];
         return null;
     }
 
@@ -62,8 +51,8 @@ class TextUtil {
     }
 
     /** @param {string} text */
-    static limitText(text, charLimit) {
-        if (text.length > charLimit) return text.slice(0, charLimit-12) + " ...and more";
+    static limitText(text, charLimit, hint=" ...and more") {
+        if (text.length > charLimit) return text.slice(0, charLimit-hint.length) + hint;
         return text;
     }
 
@@ -134,15 +123,6 @@ class TextUtil {
         return str.split("_").map(v => v[0].toUpperCase() + v.slice(1)).join(" ");
     }
 
-    static toFieldValue(obj, max) {
-        if (!obj) return 'None';
-        if (obj instanceof Array)
-            return obj.slice(0, max).map(value => '`•` ' + `${(`${value}`.includes('<') && `${value}`.includes('>')) ? `${value}` : `${value}`}`).join('\n')
-                + (obj.length > max ? `\nand more...` : ``);
-        return Object.entries(obj).slice(0, max).map(([key, value]) => `\`•\` ${(`${key}`.includes('<') && `${key}`.includes('>')) ? `${key}**:**` : `**${key}:**`} ${(`${value}`.includes('<') && `${value}`.includes('>')) ? `${value}` : `\`${value}\``}`)
-            .join('\n') + (Object.entries(obj).length > max ? `\nand more...` : ``);
-    }
-    
 }
 
 module.exports = TextUtil;

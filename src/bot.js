@@ -1,6 +1,6 @@
 const { GatewayIntentBits, ActivityType } = require("discord.js");
 
-const ChallongeBracketClient = require("./lib/middleware/challonge");
+const ChallongeBracketClient = require("./lib/apis/challonge");
 const DBClient = require("./lib/postgresql/database");
 const ScrimsBot = require("./lib/discord-bot/bot");
 const DBTable = require("./lib/postgresql/table");

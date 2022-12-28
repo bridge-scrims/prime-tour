@@ -1,4 +1,4 @@
-const GuildEntry = require("../scrims/guild_entry")
+const GuildEntry = require("../database/guild_entry")
 
 /**
  * @template T
@@ -41,14 +41,13 @@ class DynamicallyConfiguredObjectCollection {
          */
         this.created = {}
 
-        // Adding the config type if it does not exist
-        this.database.call('ensure_guild_entry_type', [type]).catch(console.error)
+        this.database.call('ensure_type', [`${this.database.guildEntryTypes}`, type]).catch(console.error)
 
-        this.database.guildEntrys.cache.on('push', (...a) => this.onCacheCreate(...a).catch(console.error))
-        this.database.guildEntrys.cache.on('update', (...a) => this.onCacheCreate(...a).catch(console.error))
-        this.database.guildEntrys.cache.on('remove', (...a) => this.onCacheRemove(...a).catch(console.error))
+        this.database.guildEntries.cache.on('push', (...a) => this.onCacheCreate(...a).catch(console.error))
+        this.database.guildEntries.cache.on('update', (...a) => this.onCacheCreate(...a).catch(console.error))
+        this.database.guildEntries.cache.on('remove', (...a) => this.onCacheRemove(...a).catch(console.error))
         
-        const configured = this.database.guildEntrys.cache.values().filter((...a) => this.isCorrectHandler(...a))
+        const configured = this.database.guildEntries.cache.values().filter((...a) => this.isCorrectHandler(...a))
         Promise.allSettled(configured.map(e => this.onCacheCreate(e).catch(console.error)))
 
     }
@@ -77,7 +76,7 @@ class DynamicallyConfiguredObjectCollection {
             if (!this.bot.guilds.cache.has(entry.guild_id)) return false;
             if (entry.client_id && this.bot.user.id !== entry.client_id) return false;
             if (
-                !entry.client_id && this.database.guildEntrys.cache.find({ 
+                !entry.client_id && this.database.guildEntries.cache.find({ 
                     client_id: this.bot.user.id, id_type: entry.id_type, guild_id: entry.guild_id 
                 })
             ) return false;

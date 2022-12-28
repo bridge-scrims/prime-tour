@@ -26,7 +26,7 @@ class BotCommandInstaller {
         this.configurations = {}
 
         /** @type {import('../types').BotCommandResolvable[]} */
-        this.BotCommands = []
+        this.botCommands = []
 
         this.bot.on(Events.GuildCreate, _ => this.update().catch(console.error))
         // this.on(Events.GuildCreate, guild => this.commands.updateGuildCommandsPermissions(guild).catch(console.error))
@@ -41,10 +41,10 @@ class BotCommandInstaller {
         await this.update()
     }
 
-    setBotCommandDefaultPermission(BotCommand, scrimsPermissions, guilds) {
+    setBotCommandDefaultPermission(botCommand, scrimsPermissions, guilds) {
         const guildPermissions = guilds.map(guild => this.getCommandPermissionsGuildCommandPermissions(guild, scrimsPermissions))
         const defaultPermission = guildPermissions.some(perms => perms.length > 10) || guildPermissions.every(perms => perms.length === 0)
-        BotCommand.setDefaultPermission(defaultPermission)
+        botCommand.setDefaultPermission(defaultPermission)
     }
 
     async update() {
@@ -52,18 +52,18 @@ class BotCommandInstaller {
         // await this.updateCommandsPermissions()
     }
 
-    /** @param {import('../types').BotCommandResolvable} BotCommand */
-    add(BotCommand) {
-        this.BotCommands.push(BotCommand)
+    /** @param {import('../types').BotCommandResolvable} botCommand */
+    add(botCommand) {
+        this.botCommands.push(botCommand)
     }
 
     /** @protected */
     install() {
-        this.BotCommands.forEach(cmd => {
+        this.botCommands.forEach(cmd => {
             if (typeof cmd === "function") cmd = cmd(this.bot)
             this._install(cmd);
         })
-        this.BotCommands = []
+        this.botCommands = []
     }
 
     /** 
@@ -123,15 +123,15 @@ class BotCommandInstaller {
                  return true;
     }
 
-    getGuilds(forceInstallHostGuild) {
+    getGuilds({ forceInstallHostGuild, avoidHost } = {}) {
         const guilds = Array.from(this.bot.guilds.cache.map(guild => guild.id))
-        return guilds.filter(id => forceInstallHostGuild || this.bot.servesHost || (id !== this.bot.hostGuildId))
+        return guilds.filter(id => ((forceInstallHostGuild || this.bot.servesHost) && !avoidHost) || (id !== this.bot.hostGuildId))
     }
 
     async updateAppCommand(appCmd, guildId) {
 
         const config = this.getBotCommandConfiguration(appCmd.name)
-        const guilds = config?.guilds || this.getGuilds(config?.forceInstallHostGuild)
+        const guilds = config?.guilds || this.getGuilds(config)
         const builder = this.getCommandBuilder(appCmd.name)
 
         if (appCmd) {
@@ -153,7 +153,7 @@ class BotCommandInstaller {
     async addAppCommand(builder, commands, guildId) {
 
         const config = this.getBotCommandConfiguration(builder.name)
-        const guilds = config.guilds || this.getGuilds(config.forceInstallHostGuild)
+        const guilds = config.guilds || this.getGuilds(config)
 
         if (this.isAllGuilds(guilds) && guildId) return false;
         if (!((this.isAllGuilds(guilds) && !guildId) || guilds.includes(guildId))) return false;

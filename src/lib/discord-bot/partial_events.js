@@ -1,4 +1,4 @@
-const { Events, User, Message, Partials } = require("discord.js");
+const { Events, User, Message } = require("discord.js");
 const EventEmitter = require("events");
 
 class PartialSafeEventEmitter extends EventEmitter {

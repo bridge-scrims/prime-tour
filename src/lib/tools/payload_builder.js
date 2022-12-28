@@ -33,6 +33,14 @@ class MessageOptionsBuilder {
         return this
     }
 
+    /** 
+     * @param {import("discord.js").MessageMentionOptions} allowedMentions
+     */
+    setAllowedMentions(allowedMentions = {}) {
+        this.allowedMentions = allowedMentions
+        return this;
+    }
+
     removeMentions() {
         this.allowedMentions = { parse: [] }
         return this;
@@ -43,11 +51,6 @@ class MessageOptionsBuilder {
         this.content = (!content) ? null : `${content}`
         if (this.content?.length > 2000) throw new LocalizedError("unexpected_error.overflow")
         return this
-    }
-
-    /** @param {(content: string) => string} editor */
-    editContent(editor) {
-        return this.setContent(editor(this.content))
     }
 
     /** @param {BuilderOrBuildCall<EmbedBuilder>[]} embeds */

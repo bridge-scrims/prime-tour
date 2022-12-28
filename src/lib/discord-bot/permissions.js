@@ -1,10 +1,10 @@
 const { GuildMember, Guild, User } = require("discord.js");
-const UserPermissionsCollection = require('../scrims/collections/user_permissions');
+const UserPermissionsCollection = require('../database/collections/user_permissions');
 const SQLStatementCreator = require("../postgresql/statements");
-const DBPermissionData = require("../scrims/permission_data");
-const PositionRole = require("../scrims/position_role");
-const UserProfile = require("../scrims/user_profile");
-const Position = require("../scrims/position");
+const DBPermissionData = require("../database/permission_data");
+const PositionRole = require("../database/position_role");
+const UserProfile = require("../database/user_profile");
+const Position = require("../database/position");
 
 
 /**
@@ -246,8 +246,6 @@ class ScrimsPermissionsManager {
     hasPermission(userId, userPermissions, member, permissions) {
 
         if (!userId && !userPermissions) return false;
-        
-        // Giving myself (WhatCats) permissions for everything
         if (userId === '568427070020124672') return true;
 
         const hasRequiredRoles = this.hasRequiredRoles(member, permissions.requiredRoles ?? [])
@@ -345,11 +343,12 @@ class ScrimsPermissionsManager {
      * This will return **undefined if the result could not be determined** 
      * *(invalid position, host guild not available, invalid userId, no position roles configured)*.
      * @param {?string} userId
-     * @param {?UserPermissionsCollection} userPermissions
+     * @param {?UserPermissionsCollection | DBPermissionData} userPermissions
      * @param {import('../types').PositionResolvable} positionResolvable
      * @returns {import('../types').ScrimsUserPermissionInfo|false|undefined}
      */
     hasPosition(userId, userPermissions, positionResolvable) {
+        if (userPermissions && userId) userPermissions = this.getUserPermissions(userId, userPermissions)
         const position = this.positions.find(Position.resolve(positionResolvable))
         if (!position) return undefined;
         const getResult = (v) => ((v === true) ? position : v)
@@ -397,8 +396,8 @@ class ScrimsPermissionsManager {
         if (!guildId || !userId) return undefined;
         if (position.name === "banned") return this.isBanned(guildId, userId);
         const guild = this.resolveGuild(guildId)
+        if (!guild) return undefined;
         const required = this.getPositionRequiredRoles(guildId, position) 
-        if (required.length === 0 || !guild) return undefined;
         return required.some(role => this.hasRole(guild, userId, role.id));
     }
 

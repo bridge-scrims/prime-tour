@@ -5,7 +5,7 @@ const {
 
 const MessageOptionsBuilder = require("../../tools/payload_builder");
 const StateComponentHandler = require("./state_components");
-const MojangClient = require("../../middleware/mojang");
+const MojangClient = require("../../apis/mojang");
 const TextUtil = require("../../tools/text_util");
 const TimeUtil = require("../../tools/time_util");
 

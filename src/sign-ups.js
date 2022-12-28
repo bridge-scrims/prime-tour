@@ -1,11 +1,7 @@
 const { ButtonBuilder, ButtonStyle, EmbedBuilder, TextInputStyle } = require("discord.js");
-
+const { Colors, TextUtil, TimeUtil, UserError, LocalizedError, MessageOptionsBuilder } = require("./lib");
 const ExchangeHandler = require("./lib/discord-bot/interaction-handlers/exchange");
-const MessageOptionsBuilder = require("./lib/tools/payload_builder");
-const LocalizedError = require("./lib/tools/localized_error");
-const TimeUtil = require("./lib/tools/time_util");
-const TextUtil = require("./lib/tools/text_util");
-const UserError = require("./lib/tools/user_error");
+
 
 /** @type {ExchangeHandler.EphemeralExchangeInputField[]} */
 const FIELDS = [
@@ -74,7 +70,7 @@ class PrimeTourSignups extends ExchangeHandler {
                     e => e
                         .setTitle('Timezone Not Found')
                         .setDescription(`No timezone was found in **${country.native}** with a UTC offset of **${TimeUtil.stringifyOffset(offset)}**.`)
-                        .setColor(interaction.COLORS.RedPink)
+                        .setColor(Colors.RedPink)
                         .addFields({ name: `Countries with UTC ${TimeUtil.stringifyOffset(offset)}`, value: TextUtil.toFieldValue(TimeUtil.offsetCountries(offset).sort((a, b) =>  b.population - a.population).map(country => country.name), 6) || '*None*' })
                         .addFields({ name: `Times in ${country.native}`, value: TextUtil.toFieldValue(TimeUtil.countryTimes(country).sort((a, b) => a.localeCompare(b))) || '*None*' })
                 );
@@ -146,7 +142,7 @@ class TournamentSignups {
         return new MessageOptionsBuilder()
             .addEmbeds(
                 new EmbedBuilder()
-                    .setColor(this.bot.COLORS.Discord)
+                    .setColor(Colors.Discord)
                     .setDescription(`Sign up for prime tour here.`)
             ).addActions(
                 new ButtonBuilder().setCustomId("PrimeTourSignUp").setLabel("Sign Up").setEmoji("📝").setStyle(ButtonStyle.Primary)

@@ -4,7 +4,7 @@ const { LocalizedSlashCommandBuilder } = require('../tools/localized_builders');
 const MessageOptionsBuilder = require('../../tools/payload_builder');
 const LocalizedError = require('../../tools/localized_error');
 
-const GuildEntry = require('../../scrims/guild_entry');
+const GuildEntry = require('../../database/guild_entry');
 const SQLStatementCreator = require('../../postgresql/statements');
 
 const OPTIONS = {
@@ -39,7 +39,7 @@ async function onConfigCommand(interaction) {
     const entrySelector = new SQLStatementCreator({ guild_id: interaction.guildId })
     const id_type = interaction.options.get(OPTIONS.Key).value
     if (id_type === -1) {
-        const guildConfig = await interaction.database.guildEntrys.sqlFetch(entrySelector)
+        const guildConfig = await interaction.database.guildEntries.sqlFetch(entrySelector)
         return interaction.editReply(
             new MessageOptionsBuilder()
                 .createMultipleEmbeds(
@@ -60,7 +60,7 @@ async function onConfigCommand(interaction) {
     if (!type) throw new LocalizedError("type_error.config_key")
     entrySelector.add({ id_type: type.id_type })
 
-    const entries = await interaction.database.guildEntrys.sqlFetch(entrySelector)
+    const entries = await interaction.database.guildEntries.sqlFetch(entrySelector)
     const _val = interaction.options.get(OPTIONS.Value)?.value
     const value = (_val?.toLowerCase() === "null" ? null : _val)
 
@@ -75,10 +75,10 @@ async function onConfigCommand(interaction) {
     }
 
     if (entry) {
-        if (value === null) await interaction.database.guildEntrys.delete(entry)
-        else await interaction.database.guildEntrys.update(entry, { value })
+        if (value === null) await interaction.database.guildEntries.delete(entry)
+        else await interaction.database.guildEntries.update(entry, { value })
     }else {
-        entry = await interaction.database.guildEntrys.create(
+        entry = await interaction.database.guildEntries.create(
             new GuildEntry(interaction.database)
                 .setGuild(interaction.guild).setType(type).setValue(value).setClient(client_id)
         )

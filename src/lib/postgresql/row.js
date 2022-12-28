@@ -25,10 +25,6 @@ class TableRow {
         return this.client.bot;
     }
 
-    get COLORS() {
-        return this.bot?.COLORS;
-    }
-
     get id() {
         if (this.uniqueKeys.length > 0 && this.uniqueKeys.every(key => (key in this))) return this.uniqueKeys.map(key => this[key]).join('#');
         if (this.columns.length > 0 && this.columns.every(key => (key in this))) return this.columns.map(key => this[key]).join('#');
@@ -159,10 +155,6 @@ class TableRow {
     _extractPrimaryKeys(target, localIdKeys, foreignIdKeys) {
         if (foreignIdKeys.every(key => target?.[key] !== undefined)) {
             localIdKeys.forEach((key, idx) => this[key] = target[foreignIdKeys[idx]] ?? null)
-            return true;
-        }
-        if (localIdKeys.length === 1 && (typeof target === "string" || typeof target === 'number')) {
-            this[localIdKeys[0]] = target
             return true;
         }
     }

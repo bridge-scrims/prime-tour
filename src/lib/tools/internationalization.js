@@ -1,4 +1,3 @@
-const util = require('node:util');
 const fs = require('fs');
 
 const path = require('path');

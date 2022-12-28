@@ -2,7 +2,10 @@ const { EmbedBuilder, ButtonBuilder, GuildMember, Guild } = require("discord.js"
 const I18n = require("./internationalization");
 const UserError = require("./user_error");
 
-class MessageBuilder {
+/** 
+ * @deprecated old way of creating messages
+ */
+class ScrimsMessageBuilder {
 
     static warningYellow = "#EBB611"
     static successGreen = "#00DB0E"
@@ -12,9 +15,9 @@ class MessageBuilder {
 
     /**
      * @param {string} resolvable 
-     * @param {import('../scrims/user_profile')[]} scrimsUsers 
+     * @param {import('../database/user_profile')[]} scrimsUsers 
      * @param {Guild} guild 
-     * @returns {import('../scrims/user_profile')|GuildMember|null}
+     * @returns {import('../database/user_profile')|GuildMember|null}
      */
     static parseUser(resolvable, scrimsUsers, guild) {
 
@@ -240,4 +243,4 @@ class MessageBuilder {
     
 }
 
-module.exports = MessageBuilder;
+module.exports = ScrimsMessageBuilder;

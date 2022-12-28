@@ -34,7 +34,7 @@ class AuditedEventEmitter extends EventEmitter {
             if (fetchedLogs) {
                 object.executor = fetchedLogs.entries
                     .filter(log => validator(object, log))
-                    .sort((a, b) =>  b.createdTimestamp - a.createdTimestamp)
+                    .sort((a, b) => b.createdTimestamp - a.createdTimestamp)
                     .first()?.executor ?? null
             }
         }

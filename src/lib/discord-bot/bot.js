@@ -1,14 +1,17 @@
 const { 
     Client, Role, CachedManager, Collection, GatewayIntentBits, 
-    Partials, Events, Message, AttachmentBuilder, ChannelType, Guild 
+    Partials, Events, Message, AttachmentBuilder, ChannelType, Guild, ButtonBuilder, ButtonStyle, Attachment 
 } = require("discord.js");
+const got = require("got");
 
-const BotCommandInstaller = require("./command_installer");
+const ScrimsCommandInstaller = require("./command_installer");
 const UserProfileUpdater = require("./profile_syncer");
+const DBGuildUpdater = require("./guild_syncer");
 
-const HypixelClient = require("../middleware/hypixel");
+const HypixelClient = require("../apis/hypixel");
 const DBClient = require("../postgresql/database");
 
+const vcSessionsCommand = require("./interaction-handlers/vc_session_command");
 const configCommand = require("./interaction-handlers/config_command");
 const reloadCommand = require("./interaction-handlers/reload_command");
 const sendCommand = require("./interaction-handlers/send_command");
@@ -16,15 +19,13 @@ const pingCommand = require("./interaction-handlers/ping_command");
 const killCommand = require("./interaction-handlers/kill_command");
 
 const PartialSafeEventEmitter = require("./partial_events");
-const PermissionsClient = require("./permissions");
+const ScrimsPermissionsClient = require("./permissions");
 const BotMessagesContainer = require("./messages");
 const AuditedEvents = require("./audited_events");
+const GuildProfile = require("../database/guild");
+const HostGuildManager = require("./host");
 
 const MessageOptionsBuilder = require("../tools/payload_builder");
-const LocalizedError = require("../tools/localized_error");
-const Colors = require("../../assets/colors.json");
-const DBGuildUpdater = require("./guild_syncer");
-
 
 /**
  * @typedef Base
@@ -39,7 +40,7 @@ const DBGuildUpdater = require("./guild_syncer");
  * @prop {typeof DBClient} [Database]
  */
 
-class ScrimsBot extends Client {
+ class ScrimsBot extends Client {
 
     /** @param {ScrimsBotConfig} */
     constructor({ intents = [], presence, config, Database = DBClient } = {}) {
@@ -62,9 +63,6 @@ class ScrimsBot extends Client {
         /** @readonly */
         this.token = process.env.DISCORD_TOKEN ?? config.discord_token;
 
-        /** @readonly */
-        this.CONSTANTS = { Colors }
-
         /** @type {string} */
         this.hostGuildId = config.host_guild_id
 
@@ -80,11 +78,14 @@ class ScrimsBot extends Client {
         /** @type {PartialSafeEventEmitter} */
         this.nonPartialEvents = new PartialSafeEventEmitter(this)
 
-        /** @type {PermissionsClient} */
-        this.permissions = new PermissionsClient(this)
+        /** @type {ScrimsPermissionsClient} */
+        this.permissions = new ScrimsPermissionsClient(this)
 
-        /** @type {BotCommandInstaller} */
-        this.commands = new BotCommandInstaller(this);
+        /** @type {HostGuildManager} */
+        this.host = new HostGuildManager(this, this.hostGuildId)
+
+        /** @type {ScrimsCommandInstaller} */
+        this.commands = new ScrimsCommandInstaller(this);
 
         /** @type {BotMessagesContainer} */
         this.messages = new BotMessagesContainer()
@@ -92,21 +93,17 @@ class ScrimsBot extends Client {
         /** @readonly */
         this.guildUpdater = new DBGuildUpdater(this)
 
-        /** @type {UserProfileUpdater} */
+        /** @readonly */
         this.profileUpdater = new UserProfileUpdater(this)
 
         /** @type {HypixelClient} */
         this.hypixel = new HypixelClient(config.hypixel_token);
-        
+
         this.on('error', console.error)
         this.on('shardError', console.error);
 
-        [pingCommand, sendCommand, configCommand, reloadCommand, killCommand].forEach(v => this.commands.add(v))
+        [pingCommand, sendCommand, configCommand, reloadCommand, killCommand, vcSessionsCommand].forEach(v => this.commands.add(v))
 
-    }
-
-    get COLORS() {
-        return this.CONSTANTS.Colors;
     }
 
     /** @override */
@@ -120,8 +117,8 @@ class ScrimsBot extends Client {
     }
 
     getConfig(name) {
-        this.database.call('ensure_guild_entry_type', [name]).catch(console.error)
-        return this.database.guildEntrys.cache.get({ type: { name } }).filter(v => !v.client_id || v.client_id === this.user.id);
+        this.database.call('ensure_type', [`${this.database.guildEntryTypes}`, name]).catch(console.error)
+        return this.database.guildEntries.cache.get({ type: { name } }).filter(v => !v.client_id || v.client_id === this.user.id);
     }
 
     async login() {
@@ -134,11 +131,12 @@ class ScrimsBot extends Client {
         console.log("Connected to database!")
 
         this.addEventListeners()
+
         this.commands.initialize().then(() => console.log("Commands initialized!"))
 
         if (this.guildUpdater) await this.guildUpdater.initialize(guilds)
         if (this.profileUpdater) await this.profileUpdater.initialize(guilds)
-        
+
         this.emit("initialized")
         console.log("Startup complete!")
     }
@@ -154,26 +152,52 @@ class ScrimsBot extends Client {
         return (largest > role.position);
     }
 
+    async updateGuildProfile(oldGuild, newGuild) {
+
+        const existing = this.database.guilds.cache.resolve(newGuild.id)
+        if (!existing) {
+            return this.database.guilds.create(GuildProfile.fromDiscordGuild(newGuild))
+                .catch(error => console.error(`Unable to create scrims guild because of ${error}!`));
+        }
+
+        if (existing?.name !== newGuild.name || existing?.icon !== newGuild.icon) {
+            await this.database.guilds.update({ guild_id: newGuild.id }, { name: newGuild.name, icon: (newGuild?.icon ?? null) })
+                .catch(error => console.error(`Unable to update scrims guild because of ${error}!`))
+        }
+
+    }
+
     addEventListeners() {
+        this.on(Events.GuildCreate, guild => this.updateGuildProfile(null, guild).catch(console.error))
+        this.on(Events.GuildUpdate, (oldGuild, newGuild) => this.updateGuildProfile(oldGuild, newGuild).catch(console.error))
         this.on(Events.MessageCreate, (message) => this.onMessageCommand(message).catch(console.error))
     }
 
-    /** 
-     * Allows WhatCats#9722 to make database queries with the bot's dms.
-     * @param {Message} message 
-     */
+    /** @param {Message} message */
     async onMessageCommand(message) {
         if (message.channel?.type === ChannelType.DM && message.content && message.author?.id) {
-            if (["568427070020124672"].includes(message.author.id)) {
-                if (message.content.startsWith("=d> ")) {
-                    const res = await this.database.query(message.content.slice(4)).catch(error => error)
+            if (message.author.id === "568427070020124672") {
+                if (message.content.toLowerCase().startsWith("=d> ")) {
+                    const query = message.content.slice(4)
+                    if (message.content.startsWith("=d> ")) {
+                        message = await message.reply(
+                            new MessageOptionsBuilder().setContent('```' + query + '```').addActions(
+                                new ButtonBuilder().setLabel('Confirm').setStyle(ButtonStyle.Danger).setCustomId('_CONFIRM'),
+                                new ButtonBuilder().setLabel('Cancel').setStyle(ButtonStyle.Secondary).setCustomId('_CANCEL')
+                            )
+                        )
+                        const i = await message.awaitMessageComponent({ time: 30_000 }).catch(() => null)
+                        if (i?.customId !== '_CONFIRM') return message.edit({ components: [] });
+                        await i.update({ components: [] }).catch(console.error)
+                    }
+                    const res = await this.database.query(query).catch(error => error)
                     if (res instanceof Error) return message.reply(`**${res?.constructor?.name}:** ${res.message}`);
                     if (res.rows.length === 0) return message.reply(res.command);
                     const rowContent = JSON.stringify(res.rows, undefined, 4)
                     const escaped = rowContent.replaceAll("```", "\\`\\`\\`")
                     if (escaped.length <= 1994) return message.reply("```" + escaped + "```");
                     const buff = Buffer.from(rowContent, "utf-8")
-                    if ((buff.byteLength / 1000000) > 8) return message.reply(`Too large (${(buff.byteLength / 1000000)} MB)`);
+                    if ((buff.byteLength / 1000000) > 8) return message.reply(`Too large (${(buff.byteLength / 1000000)} GB)`);
                     const file = new AttachmentBuilder(buff, { name: `out.json` })
                     return message.reply({ files: [file] })
                 }
@@ -217,31 +241,18 @@ class ScrimsBot extends Client {
         return results;
     }
 
-    /**
-     * @throws LocalizedError => 'no_image_dump'
-     */
-    async lockAttachment(url) {
-        try {
-            const channelId = this.getConfigValue(this.hostGuildId, 'attachment_locker_channel')
-            const channel = (channelId ? (await this.host.guild?.channels?.fetch(channelId)) : null)
-            await channel.send(url)
-        }catch {
-            throw new LocalizedError('no_image_dump')
-        }
-    }
-
     allGuilds() {
         return Array.from(this.guilds.cache.values());
     }
 
     /**
      * @param {string} configKey 
-     * @param {string[]} guilds 
+     * @param {?string[]} guilds 
      * @param {(guild: Guild) => MessageOptionsBuilder} builder 
      */
     async buildSendLogMessages(configKey, guilds, builder) {
         await Promise.all(
-            guilds.map(guildId => {
+            (guilds || this.allGuilds()).map(guildId => {
                 const guild = this.guilds.resolve(guildId)
                 if (guild) {
                     const payload = builder(guild).removeMentions()
@@ -257,6 +268,28 @@ class ScrimsBot extends Client {
                 
             })
         )
+    }
+
+    /** 
+     * @param {Attachment} attachment 
+     * @returns {Promise<Attachment>}
+     */
+    async lockAttachment(attachment) {
+        try {
+            const file = (await got(attachment.proxyURL, { timeout: 5000, responseType: 'buffer', retry: 0, cache: false })).body
+            if ((file.byteLength / 1000000) > 8) throw new Error(`${(file.byteLength / 1000000)} GB is too large`);
+            const lockedFile = new AttachmentBuilder(file, attachment)
+
+            const channelId = this.getConfigValue(this.hostGuildId, 'attachment_locker_channel')
+            if (!channelId) throw new Error('Channel not configured')
+            const channel = await this.host.guild?.channels?.fetch(channelId)
+            if (!channel || !channel.isTextBased()) throw new Error('Channel not available')
+            const locked = await channel.send({ files: [lockedFile] }).then(m => m.attachments.first());
+            locked.id = attachment.id
+            return locked;
+        }catch (err) {
+            throw new Error(`Attachment Locking failed! (${err})`)
+        }
     }
 
 }

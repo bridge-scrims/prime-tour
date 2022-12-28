@@ -5,7 +5,7 @@ const Options = {
     ExitCode: 'exit_code'
 }
 
-/** @param {import('../../types').BotCommandInteraction} interaction */
+/** @param {import('../../types').ScrimsChatInputCommandInteraction} interaction */
 async function onKillCommand(interaction) {
 	await interaction.return(new MessageOptionsBuilder().setContent('👋 **Goodbye**').setEphemeral(true)).catch(console.error)
 	console.log(`Kill command used by ${interaction.user.tag} to terminate this process!`)
@@ -13,7 +13,7 @@ async function onKillCommand(interaction) {
     process.exit(interaction.options.get(Options.ExitCode)?.value ?? 1)
 }
 
-/** @type {import('../../types').BotCommand} */
+/** @type {import('../types').BotCommand} */
 module.exports = {
     command: new LocalizedSlashCommandBuilder()
         .setNameAndDescription('commands.kill')

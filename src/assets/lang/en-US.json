@@ -211,7 +211,7 @@
             },
             "game_score_option": {
                 "name": "game§{0}",
-                "description": "The score of game §{0} written as {winner's points}-{losser's points} (e.g. 5-0)"
+                "description": "The score of game §{0} written as {winner's points}-{loser's points} (e.g. 5-0)"
             }
         }
     },
@@ -294,7 +294,10 @@
         "creator_only": "This decision is reserved for the ticket creator %s!",
         "permissions_updated": "%s updated the permissions of %s.",
         "existing": "You have already created one of these (%s)!",
-        "none": "This command can only be used in ticket channels!"
+        "none": "This command can only be used in ticket channels!",
+        "not_position_level": "You don't have permission to manage %s!",
+        "no_target": "Please specify a target (User or Role).",
+        "not_pinged_info": "(%s was not pinged)"
     },
     "suggestions": {
         "blacklisted": { "title": "Blacklisted", "description": "You are not allowed to create suggestions, since you didn't follow the rules.?( This will last until §{0}!)" }
@@ -314,21 +317,27 @@
             "name": "+ %s  :stopwatch:  Expired Vouch(es)",
             "value": "*(Vouches expire after 4 months)*"
         },
+        "as_string": {
+            "negative": "?(**§{0}.**  )?(§{1} )Devouch?( for *§{2}*)",
+            "positive": "?(**§{0}.**  )?(§{1} )Vouch?( for *§{2}*)",
+            "denied": "?(**§{0}.**  )Got Denied?( for *§{1}*)",
+            "accepted": "?(**§{0}.**  )Got Accepted?( for *§{1}*)"
+        },
         "to_field": {
-            "neagtive": {
-                "name": ":no_entry:  ?(§{2} )Disclaim | §{3}",
+            "negative": {
+                "name": "?(§{4}.  ):no_entry:  ?(§{2} )Devouch | §{3}",
                 "value": "${vouches.description_1}"
             },
             "positive": {
-                "name": ":white_check_mark:  ?(§{2} )Vouch | §{3}",
+                "name": "?(§{4}.  ):white_check_mark:  ?(§{2} )Vouch | §{3}",
                 "value": "${vouches.description_1}"
             },
             "denied": {
-                "name": ":x:  Got Denied | §{2}",
+                "name": "?(§{3}.  ):x:  Got Denied | §{2}",
                 "value": "${vouches.description_2}"
             },
             "accepted": {
-                "name": ":ballot_box_with_check:  Got Accepted | §{2}",
+                "name": "?(§{3}.  ):ballot_box_with_check:  Got Accepted | §{2}",
                 "value": "${vouches.description_2}"
             }
         },

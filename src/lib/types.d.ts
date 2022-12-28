@@ -2,7 +2,8 @@ import {
     CommandInteraction, ChatInputCommandInteraction, ContextMenuCommandInteraction,
     ModalSubmitInteraction, GuildMember, BaseInteraction, MessageComponentInteraction, 
     AutocompleteInteraction, MessageOptions, User, Snowflake, PermissionsString, EmbedField, 
-    ActionRowBuilder, MessagePayload, ContextMenuCommandBuilder, SlashCommandBuilder, ModalBuilder, ApplicationCommandOptionChoiceData
+    ActionRowBuilder, ContextMenuCommandBuilder, SlashCommandBuilder, ModalBuilder, 
+    ApplicationCommandOptionChoiceData, SelectMenuInteraction
 } from "discord.js";
 
 import StateComponentHandler from "./discord-bot/interaction-handlers/state_components";
@@ -16,8 +17,6 @@ import I18n from "./tools/internationalization";
 import Position from "./scrims/position";
 import DBClient from "./postgresql/database";
 import ScrimsBot from "./discord-bot/bot";
-
-import * as Colors from "../assets/colors.json"
 
 export interface ScrimsPermissions {
     positionLevel?: PositionResolvable;
@@ -56,7 +55,6 @@ export interface ScrimsInteraction extends BaseInteraction {
     userHasPermissions(perms: ScrimsPermissions): boolean;
     
     i18n: I18n;
-    COLORS: typeof Colors;
     userProfile: UserProfile;
     client: ScrimsBot; 
     database: DBClient;
@@ -85,6 +83,10 @@ export interface ScrimsChatInputCommandInteraction extends ScrimsInteraction, Ch
 
 export interface ScrimsComponentInteraction extends ScrimsInteraction, MessageComponentInteraction {
     memoryData: any;
+    args: string[];
+}
+
+export interface ScrimsSelectMenuInteraction extends ScrimsInteraction, SelectMenuInteraction {
     args: string[];
 }
 
