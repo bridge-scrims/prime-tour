@@ -112,7 +112,7 @@ class DBCache extends EventEmitter {
     }
 
     /**
-     * @param {Object.<string, any>|Array.<string>|Array.<Array.<string>>|T} [options] If fasley, gets all.
+     * @param {Object.<string, any>|Array.<string>|Array.<Array.<string>>|T} [options] If falsely, gets all.
      * @returns {T[]}
      */ 
     get(options) {

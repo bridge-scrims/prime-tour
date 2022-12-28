@@ -4,8 +4,8 @@ const path = require('path');
 const util = require('util');
 const fs = require('fs'); 
 
-const LOGGINGPATH = path.join("logs")
-const MAXLOGS = 10
+const LOGGING_PATH = path.join("logs")
+const MAX_LOGS = 10
 
 function stringifyDate(date) {
     const month = (date.getUTCMonth()+1).toString().padStart(2, '0')
@@ -14,7 +14,7 @@ function stringifyDate(date) {
 }
        
 async function removeOld() {
-    const files = await fs.promises.readdir(LOGGINGPATH).catch(() => null)
+    const files = await fs.promises.readdir(LOGGING_PATH).catch(() => null)
     if (!files) return false;
 
     const logs = files
@@ -22,9 +22,9 @@ async function removeOld() {
         .map(file => file.slice(0, -4))
         .sort((name1, name2) => name2 - name1)
 
-    while (logs.length > MAXLOGS) {
+    while (logs.length > MAX_LOGS) {
         const oldFile = logs.pop()
-        await fs.promises.rm(path.join(LOGGINGPATH, `${oldFile}.log`))
+        await fs.promises.rm(path.join(LOGGING_PATH, `${oldFile}.log`))
     }
 }
 
@@ -38,7 +38,7 @@ const error = console.error
 const warn = console.warn
 
 async function rotateLog() {
-    const logFile = fs.createWriteStream(path.join(LOGGINGPATH, `${stringifyDate(new Date())}.log`), { flags: 'a' });
+    const logFile = fs.createWriteStream(path.join(LOGGING_PATH, `${stringifyDate(new Date())}.log`), { flags: 'a' });
     
     console.log = ((...d) => {
         log.apply(console, [getTime()].concat(d))
@@ -71,7 +71,7 @@ async function rotateLater() {
 }
     
 async function setup() {
-    if (!fs.existsSync(LOGGINGPATH)) fs.mkdirSync(LOGGINGPATH)
+    if (!fs.existsSync(LOGGING_PATH)) fs.mkdirSync(LOGGING_PATH)
     await rotateLog().catch(console.error)
     rotateLater().catch(console.error)
 }

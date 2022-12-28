@@ -134,10 +134,10 @@ class TimeUtil {
         const remainder = Object.keys(layers)
             .slice(0, -1).map(unit => {
                 const value = Object.values(layers).filter((v, index) => index > Object.keys(layers).indexOf(unit)).reduce((pv, cv) => pv * cv, 1)
-                const ammount = Math.round(diff / value)
-                diff -= (ammount * value)
-                return [unit, ammount];
-            }).filter(([unit, ammount]) => ammount > 0).slice(0, length).map(([unit, value]) => `**${value}**\`${(value > 1 ? `${unit}s` : unit)}\``)
+                const amount = Math.round(diff / value)
+                diff -= (amount * value)
+                return [unit, amount];
+            }).filter(([unit, amount]) => amount > 0).slice(0, length).map(([unit, value]) => `**${value}**\`${(value > 1 ? `${unit}s` : unit)}\``)
         if (remainder.length < 1) return '**right now**';
         return (introduce ? 'in ' : '') + (bind ? (remainder.slice(0, -1).join(', ') + ' and ' + remainder.slice(-1)[0]) : remainder.join(' '))
     }

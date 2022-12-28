@@ -67,7 +67,7 @@ async function startTourneyCommand(interaction) {
         )
     }catch (err) {
         console.error('Tourney Start Aborted', err)
-        await interaction.editReply('An error occured, forcing me to abort.').catch(() => null)
+        await interaction.editReply('An error occurred, forcing me to abort.').catch(() => null)
         await Promise.all(channels.map(v => v?.delete()?.catch(() => null)))
         return interaction.editReply('Successfully aborted.').catch(() => null)
     }

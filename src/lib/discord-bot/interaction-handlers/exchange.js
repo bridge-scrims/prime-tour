@@ -164,7 +164,7 @@ class State {
      * @param {InputFieldParseType} type
      * @returns {string}
      */
-    stringifyFieldValue(type, value, inputed, required, force) {
+    stringifyFieldValue(type, value, inputted, required, force) {
 
         if (type === 'McAccount' && value)
             return `\`\`\`${value.name} (${value.id})\`\`\``;
@@ -176,9 +176,9 @@ class State {
             return `\`\`\`${value.native}\`\`\``;
 
         if (type === 'Time' && value?.success)
-            return `\`\`\`${inputed} (${TimeUtil.stringifyOffset(value.value)})\`\`\``;
+            return `\`\`\`${inputted} (${TimeUtil.stringifyOffset(value.value)})\`\`\``;
 
-        return `\`\`\`${((typeof value === 'string') ? TextUtil.limitText(value, 1024-6) : inputed) || " "}\`\`\``;
+        return `\`\`\`${((typeof value === 'string') ? TextUtil.limitText(value, 1024-6) : inputted) || " "}\`\`\``;
 
     }
     
@@ -306,7 +306,7 @@ class ExchangeHandler extends StateComponentHandler {
         const modal = this.getModal(interaction.state);
         if (!modal) {
             await interaction.deferUpdate()
-            await interaction.editReply(new MessageOptionsBuilder().setContent('Submiting...')).catch(() => null)
+            await interaction.editReply(new MessageOptionsBuilder().setContent('Submitting...')).catch(() => null)
             return this.onFinish(interaction).then(v => (typeof v === 'object') ? ({ ...v, last: true }) : v)
         }
         return modal;

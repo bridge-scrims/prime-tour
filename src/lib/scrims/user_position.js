@@ -82,7 +82,7 @@ class ScrimsUserPosition extends TableRow {
     }
 
     /**
-     * @param {number} [given_at] if falsley will use current time 
+     * @param {number} [given_at] if falsely will use current time 
      */
     setGivenPoint(given_at) {
         this.given_at = given_at ?? Math.floor(Date.now()/1000)
@@ -90,7 +90,7 @@ class ScrimsUserPosition extends TableRow {
     }
 
     /**
-     * @param {?number} [expires_at] if falsley will use null (no expiration)
+     * @param {?number} [expires_at] if falsely will use null (no expiration)
      */
     setExpirationPoint(expires_at = null) {
         this.expires_at = expires_at

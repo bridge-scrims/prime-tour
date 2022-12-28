@@ -166,7 +166,7 @@
             "no_session": "The session you are looking for does not exist.",
             "no_sessions": "There are no sessions to display here.",
             "started_session": "Started a %s Session.",
-            "ended_session": "Stoped a %s Session.",
+            "ended_session": "Stopped a %s Session.",
             "no_permissions": { "title": "${missing_permissions}", "description": "You are not allowed to %s %s sessions!" },
             "missing_voice_session": { "title": "No Session", "description": "There is currently no ongoing session in this vc. To create a session use the **/session start** command." }
         },
@@ -243,7 +243,7 @@
     "positions": {
         "no_perms": { "title": "${missing_permissions}", "description": "You don't have permission to manage this position!" },
         "none": { "description": "%s doesn't have any positions." },
-        "already_taken": "Coudn't remove **%s**, since %s does not have it!",
+        "already_taken": "Couldn't remove **%s**, since %s does not have it!",
         "update_unavailable": "%s already has `%s` %s",
         "removed": "%s lost `%s`.",
         "created": "%s given `%s` %s.",
@@ -354,7 +354,7 @@
     "app_received": "***Your application was received by the council!***",
     "vs": "V/S",
     "games": {
-        "no_participats": "*No Participants*",
+        "no_participants": "*No Participants*",
         "user_history": {
             "title": "%s Game History"
         }

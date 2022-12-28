@@ -48,7 +48,7 @@ class ScrimsTicket extends TableRow {
     }
 
     /**
-     * @param {string} [id_ticket] if falsley will use a random uuid
+     * @param {string} [id_ticket] if falsely will use a random uuid
      */
     setId(id_ticket) {
         this.id_ticket = id_ticket ?? this.client.generateUUID()
@@ -64,7 +64,7 @@ class ScrimsTicket extends TableRow {
     }
 
     /**
-     * @param {number} [created_at] if falsley will use current time 
+     * @param {number} [created_at] if falsely will use current time 
      */
     setCreation(created_at) {
         this.created_at = created_at ?? Math.floor(Date.now()/1000)

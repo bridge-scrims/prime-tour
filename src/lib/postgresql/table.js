@@ -107,7 +107,7 @@ class DBTable {
     }
 
     /**
-     * @param {SQLStatementCreator|Object.<string, any>|T} [selector] If fasley, fetches all.
+     * @param {SQLStatementCreator|Object.<string, any>|T} [selector] If falsely, fetches all.
      * @param {string[]} mapKeys
      * @returns {Promise<{ [x: string]: T }>}
      */
@@ -117,7 +117,7 @@ class DBTable {
     }
 
     /**
-     * @param {SQLStatementCreator|Object.<string, any>|T} [selector] If fasley, fetches all.
+     * @param {SQLStatementCreator|Object.<string, any>|T} [selector] If falsely, fetches all.
      * @param {string[]} mapKeys
      * @returns {Promise<{ [x: string]: T[] }>}
      */
@@ -161,14 +161,14 @@ class DBTable {
 
     /** 
      * @deprecated Use delete instead!
-     * @param {Object.<string, any>|T|string|number|Array.<string>} [selector] If fasley, deletes all.
+     * @param {Object.<string, any>|T|string|number|Array.<string>} [selector] If falsely, deletes all.
      */
     async remove(selector) {
         return this.delete(selector);
     }
 
     /** 
-     * @param {Object.<string, any>|T|string|number|Array.<string>} [selector] If fasley, deletes all.
+     * @param {Object.<string, any>|T|string|number|Array.<string>} [selector] If falsely, deletes all.
      * @returns {Promise<T[]>}
      */
     async delete(selector) {
@@ -191,7 +191,7 @@ class DBTable {
     }
 
     /**
-     * @param {Object.<string, any>|T} [options] If fasley, fetches all.
+     * @param {Object.<string, any>|T} [options] If falsely, fetches all.
      * @param {boolean} [useCache]
      */
     async fetch(options, useCache=true) {
@@ -248,7 +248,7 @@ class DBTable {
     }
 
     /** 
-     * @param {SQLStatementCreator|Object.<string, any>|T} [selector] If fasley, fetches all.
+     * @param {SQLStatementCreator|Object.<string, any>|T} [selector] If falsely, fetches all.
      * @param {SQLSelectOptions} [options]
      */
     async sqlFetch(selector, options = {}) {
@@ -273,7 +273,7 @@ class DBTable {
     }
 
     /** 
-     * @param {SQLStatementCreator|Object.<string, any>|T} [selector] If fasley, deletes all. 
+     * @param {SQLStatementCreator|Object.<string, any>|T} [selector] If falsely, deletes all. 
      */
     async sqlDelete(selector) {
         if (!this.exists) return [];
@@ -284,7 +284,7 @@ class DBTable {
     }
 
     /** 
-     * @param {SQLStatementCreator|Object.<string, any>|T} [selector] If fasley, fetches all. 
+     * @param {SQLStatementCreator|Object.<string, any>|T} [selector] If falsely, fetches all. 
      */
     async count(selector) {
         if (!this.exists) return 0;

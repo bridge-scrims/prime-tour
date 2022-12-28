@@ -183,11 +183,11 @@ class HypixelPlayers {
 
     /**
      * @param {string} uuid 
-     * @param {boolean} [usecache]
+     * @param {boolean} [useCache]
      */
-    async fetch(uuid, usecache=true) {
+    async fetch(uuid, useCache=true) {
 
-        if (usecache) {
+        if (useCache) {
             const cached = this.cache.get(uuid)
             if (cached) return cached;
         }

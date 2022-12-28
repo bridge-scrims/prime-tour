@@ -29,7 +29,7 @@ class ScrimsGame extends TableRow {
     }
 
     /**
-     * @param {number} [id] If falsley will use the current timestamp.
+     * @param {number} [id] If falsely will use the current timestamp.
      */
     setId(id) {
         this.id_game = id ?? Date.now()
@@ -85,7 +85,7 @@ class ScrimsGame extends TableRow {
             name: `<t:${this.started_at}:R>`,
             inline: true,
             value: Object.values(this.getParticipants(participants).getTeams())
-                .map(v => v.map(u => `${u.user}`).join(" ")).join(`\n**══ ${i18n.get("vs")} ══**\n`) || i18n.get("games.no_participats")
+                .map(v => v.map(u => `${u.user}`).join(" ")).join(`\n**══ ${i18n.get("vs")} ══**\n`) || i18n.get("games.no_participants")
         }
     }
 

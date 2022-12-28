@@ -3,7 +3,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 /** 
  * @typedef SequencedFunctionConfig
  * @property {number} [cooldown] Number of seconds to wait between calls.
- * @property {boolean} [merge] If calls comming at the same time should be merged.
+ * @property {boolean} [merge] If calls coming at the same time should be merged.
  */
 
 /**

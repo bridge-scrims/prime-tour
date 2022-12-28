@@ -103,12 +103,12 @@ class BotCommandInstaller {
 
         // UPDATING
         await Promise.all(this.appCommands.map(appCmd => this.updateAppCommand(appCmd)))
-        await Promise.all(this.appCommandBuilders.map(builder => this.addAppComand(builder, this.appCommands)))
+        await Promise.all(this.appCommandBuilders.map(builder => this.addAppCommand(builder, this.appCommands)))
 
         for (const guild of this.bot.guilds.cache.values()) {
             const commands = await guild.commands.fetch({ withLocalizations: true })
             await Promise.all(commands.map(appCmd => this.updateAppCommand(appCmd, guild.id)))
-            await Promise.all(this.appCommandBuilders.map(builder => this.addAppComand(builder, commands, guild.id)))
+            await Promise.all(this.appCommandBuilders.map(builder => this.addAppCommand(builder, commands, guild.id)))
         }
 
         // RELOADING
@@ -150,7 +150,7 @@ class BotCommandInstaller {
 
     }
 
-    async addAppComand(builder, commands, guildId) {
+    async addAppCommand(builder, commands, guildId) {
 
         const config = this.getBotCommandConfiguration(builder.name)
         const guilds = config.guilds || this.getGuilds(config.forceInstallHostGuild)

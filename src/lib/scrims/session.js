@@ -30,7 +30,7 @@ class ScrimsSession extends TableRow {
 
     }
 
-    /** @param {string} [id_session] if falsley will use a random uuid */
+    /** @param {string} [id_session] if falsely will use a random uuid */
     setId(id_session) {
         this.id_session = id_session ?? this.client.generateUUID()
         return this;

@@ -29,8 +29,8 @@ class SQLQueryBuilder {
      * @param {Object.<string, any>|Array.<string>} [parameters] 
      */
     buildFunctionCall(functionName, parameters) {
-        const [formatedParameters, values] = this._createFunctionParameters(parameters)
-        return [`SELECT ${functionName}(${formatedParameters})`, values]
+        const [formattedParameters, values] = this._createFunctionParameters(parameters)
+        return [`SELECT ${functionName}(${formattedParameters})`, values]
     }
 
 }

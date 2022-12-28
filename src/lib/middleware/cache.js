@@ -18,7 +18,7 @@ class MiddlewareCache {
         this.expirations = {}
 
         /** 
-         * Default time to live of cache entrys. 
+         * Default time to live of cache entries. 
          * @type {number} 
          * @readonly
          */

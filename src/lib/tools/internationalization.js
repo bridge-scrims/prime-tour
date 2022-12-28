@@ -5,15 +5,15 @@ const path = require('path');
 const { EmbedBuilder } = require('discord.js');
 const MessageOptionsBuilder = require('./payload_builder');
 
-const LANGDIR = path.join('src', 'assets', 'lang');
+const LANG_DIR = path.join('src', 'assets', 'lang');
 
 const DEFAULT_LOCALE = "en-US"
 const UNKNOWN_RESOURCE = "UNKNOWN_RESOURCE"
 
 /** 
  * Resource identifiers should be in **snake_case** (all lowercase & underscores).
- * - **.** Represents a new depth in the langauge file.
- * - **-/+** At the start of a identifier means that the resource should be returned in all lowercase/upercase.
+ * - **.** Represents a new depth in the language file.
+ * - **-/+** At the start of a identifier means that the resource should be returned in all lowercase/uppercase.
  * - **${resource_id}** Indicates that a different resource should be inserted.
  * - **§{0-∞}** Indicates that a parameter with a certain index should be inserted.
  * - **?(...)** Indicates that anything in the brackets should be discarded if anything unknown comes up.
@@ -156,8 +156,8 @@ class I18n {
         const format = (str) => {
             const refReplaces = Array.from(str.matchAll(/(?<!\\)(?:\\\\)*\${(.+?)(?<!\\)(?:\\\\)*}/g)).map(([m, id]) => [m, this._get(id, params, true)])
             const idxReplaces = Array.from(str.matchAll(/(?<!\\)(?:\\\\)*§{(\d+)(?<!\\)(?:\\\\)*}/g)).map(([m, i]) => [m, params[parseInt(i)] ?? UNKNOWN_RESOURCE])
-            const orderdReplaces = Array.from(str.matchAll(/(?<!\\)(?:\\\\)*%s/g)).map(([m], i) => [m, params[i] ?? UNKNOWN_RESOURCE])
-            const replaces = [ ...orderdReplaces, ...refReplaces, ...idxReplaces ]
+            const orderedReplaces = Array.from(str.matchAll(/(?<!\\)(?:\\\\)*%s/g)).map(([m], i) => [m, params[i] ?? UNKNOWN_RESOURCE])
+            const replaces = [ ...orderedReplaces, ...refReplaces, ...idxReplaces ]
             replaces.forEach(([m, r]) => str = str.replace(m, (r === UNKNOWN_RESOURCE) ? "unknown" : r))
             return { replaces, missing: replaces.some(([_, r]) => r === UNKNOWN_RESOURCE), v: str }
         }
@@ -172,12 +172,12 @@ class I18n {
 }
 
 function loadLocal(fileName) {
-    const content = fs.readFileSync(path.join(LANGDIR, fileName), { encoding: 'utf8' })
+    const content = fs.readFileSync(path.join(LANG_DIR, fileName), { encoding: 'utf8' })
     const localName = fileName.slice(0, -5)
     I18n.instances[localName] = new I18n(JSON.parse(content))
 }
 
-const files = fs.readdirSync(LANGDIR)
+const files = fs.readdirSync(LANG_DIR)
 files.forEach(fileName => loadLocal(fileName))
 if (!I18n.getInstance()) throw new Error(`A default locale is required!`)
 

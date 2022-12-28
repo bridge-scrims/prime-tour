@@ -93,7 +93,7 @@ class UserProfile extends TableRow {
         return MojangClient.fetchName(this.mc_uuid)
     }
 
-    /** @param {number} [joined_at] if falsley will use the current time */
+    /** @param {number} [joined_at] if falsely will use the current time */
     setJoinPoint(joined_at) {
         this.joined_at = joined_at ?? Math.floor(Date.now()/1000)
         return this;

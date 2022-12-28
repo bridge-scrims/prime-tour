@@ -36,7 +36,7 @@ class PrimeTourSignups extends ExchangeHandler {
 
         super(
             "PrimeTourSignUp", "Prime Tour Sign-ups", FIELDS,
-            (...args) => this.getExchangeReponse(...args),
+            (...args) => this.getExchangeResponse(...args),
             (...args) => this.verifyCreation(...args),
             (...args) => this.createParticipant(...args)
         )
@@ -102,7 +102,7 @@ class PrimeTourSignups extends ExchangeHandler {
      * @param {EmbedBuilder} embed 
      * @param {ExchangeHandler.RecallExchangeInteraction} interaction
      */
-    getExchangeReponse(embed, interaction) {
+    getExchangeResponse(embed, interaction) {
         if (interaction.state.index === -1) 
             return new MessageOptionsBuilder().setContent(`Sign-up process was forcibly aborted.`)
         return new MessageOptionsBuilder().addEmbeds(

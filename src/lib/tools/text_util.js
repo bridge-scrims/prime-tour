@@ -84,10 +84,10 @@ class TextUtil {
         if (delta < 60) return (withoutFormating ? "1min" : `\`1min\``);
     
         for (const [layer, value] of Object.entries(layers)) {
-            const ammount = Math.floor(delta / value)
-            if (ammount < 1) continue;
-            delta -= (ammount * value)
-            timeLeft[layer] += ammount
+            const amount = Math.floor(delta / value)
+            if (amount < 1) continue;
+            delta -= (amount * value)
+            timeLeft[layer] += amount
         }
         
         return Object.entries(timeLeft)
@@ -104,7 +104,7 @@ class TextUtil {
 
     /**
      * @typedef StringFormatOptions
-     * @property {string} [unknownCase] What to return if any params are falsley
+     * @property {string} [unknownCase] What to return if any params are falsely
      */
 
     /** 

@@ -79,7 +79,7 @@ class ScrimsVouch extends TableRow {
     }
 
     /**
-     * @param {string} [id_vouch] if falsley will use a random uuid
+     * @param {string} [id_vouch] if falsely will use a random uuid
      */
     setId(id_vouch) {
 
@@ -120,7 +120,7 @@ class ScrimsVouch extends TableRow {
     }
 
     /**
-     * @param {number} [given_at] if falsley will use current time 
+     * @param {number} [given_at] if falsely will use current time 
      */
     setGivenAt(given_at) {
         this.given_at = given_at ?? Math.floor(Date.now()/1000)
